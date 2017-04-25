@@ -1,4 +1,83 @@
-# dda-sampling
-Tools for arbitrary Cartesian sampling
+=======================================================================
+Arbitrary Cartesian Sampling Tools
+=======================================================================
+DISCLAIMER: This is research done at Stanford University. We do not 
+guarantee that the code is error-free. Please contact the author if you 
+find any bugs or have any suggestions or thoughts.
+Evan Levine (egl@stanford.edu) 2017.
+=======================================================================
 
-Coming soon...
+1. Components
+===============
+
+MATLAB, C, and C++
+
+matlab/
+MATLAB code, test scripts, and two demos. Implementations of sampling functions
+in MATLAB are provided in matlab/dda_utils.
+
+BART/
+C code that can be used with the Berkeley Advanced Reconstruction Toolbox (BART).
+If this is not set up, MATLAB code will revert to slower implementations in MATLAB. 
+The following functions are provided
+
+- dda_getw.c
+Calculate w from sensitivity maps.
+
+- dda_getp.c
+Calculate p from sampling pattern.
+
+- dda_getDeltaJ.c
+Calculate Delta J from w and p.
+
+- dda_bc.c
+Best candidate sampling.
+
+cpp/
+C++ implementation of best candidate sampling algorithms and function to compute Delta J.
+The BART implementation has the same functionality and a few more algorithms. I preferred
+C++ to implement the data structures used in best candidate sampling.
+
+2. Installation
+===============
+
+2.1. Prerequisites
+------------------
+
+MATLAB. 
+
+g++ and BART highly recommended for functions to run fast. 
+
+
+2.2. Setup
+------------------
+
+cpp/
+I will get around to using a proper Makefile... Can only type make for now
+
+BART/
+
+Steps to set up BART code are:
+
+1) Install BART. Your BART directory, should have a Makefile and subdirectory src. 
+   I'll refer to this directory as "bart."
+2) Copy the directory dda_tools to bart/src/. 
+   This is the library with sampling functions
+3) Copy the C files in bart, dda_getp.c, dda_getw.c, dda_getDeltaJ.c, dda_bc.c 
+   to bart/src/. 
+4) Add these 4 lines to the Makefile with the other MODULES_*. It should look like
+   BART/Makefile
+
+MODULES_dda_bc = -ldda_tools 
+MODULES_dda_getw = -ldda_tools 
+MODULES_dda_getp = -ldda_tools 
+MODULES_dda_getDeltaJ = -ldda_tools 
+
+5) Copy dda_tools.mk to bart/rules
+
+6) Compile the BART code with:
+    $ make dda_getp
+    $ make dda_getw
+    $ make dda_getDeltaJ
+    $ make dda_bc
+
