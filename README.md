@@ -1,61 +1,56 @@
-=======================================================================
-Arbitrary Cartesian Sampling Tools
-=======================================================================
+# Arbitrary Cartesian Sampling Tools
+
 DISCLAIMER: This is research done at Stanford University. We do not 
 guarantee that the code is error-free. Please contact the author if you 
 find any bugs or have any suggestions or thoughts.
 Evan Levine (egl@stanford.edu) 2017.
-=======================================================================
 
-1. Components
-===============
+## 1. Components
 
-MATLAB, C, and C++
+There are MATLAB, C, and C++ implementations.
 
-matlab/
+### matlab/
 MATLAB code, test scripts, and two demos. Implementations of sampling functions
 in MATLAB are provided in matlab/dda_utils.
 
-BART/
+### BART/
 C code that can be used with the Berkeley Advanced Reconstruction Toolbox (BART).
 If this is not set up, MATLAB code will revert to slower implementations in MATLAB. 
 The following functions are provided
 
-- dda_getw.c
+##### dda_getw.c
 Calculate w from sensitivity maps.
 
-- dda_getp.c
+##### dda_getp.c
 Calculate p from sampling pattern.
 
-- dda_getDeltaJ.c
+##### dda_getDeltaJ.c
 Calculate Delta J from w and p.
 
-- dda_bc.c
+##### dda_bc.c
 Best candidate sampling.
 
-cpp/
+### cpp/
 C++ implementation of best candidate sampling algorithms and function to compute Delta J.
 The BART implementation has the same functionality and a few more algorithms. I preferred
 C++ to implement the data structures used in best candidate sampling.
 
-2. Installation
+## 2. Installation
 ===============
 
-2.1. Prerequisites
-------------------
+### 2.1. Prerequisites
 
 MATLAB. 
 
 g++ and BART highly recommended for functions to run fast. 
 
 
-2.2. Setup
-------------------
+### 2.2. Setup
 
-cpp/
-I will get around to using a proper Makefile... Can only type make for now
+##### cpp/
+I need to write a proper Makefile, but it is not hard to compile this code.
 
-BART/
+##### BART/
 
 Steps to set up BART code are:
 
