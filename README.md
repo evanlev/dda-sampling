@@ -16,7 +16,7 @@ in MATLAB are provided in matlab/dda_utils.
 ### BART/
 C code that can be used with the Berkeley Advanced Reconstruction Toolbox (BART).
 If this is not set up, MATLAB code will revert to slower implementations in MATLAB. 
-The following functions are provided
+The following functions are provided.
 
 ##### dda_getw.c
 Calculate w from sensitivity maps.
@@ -28,7 +28,7 @@ Calculate p from sampling pattern.
 Calculate Delta J from w and p.
 
 ##### dda_bc.c
-Best candidate sampling.
+Best candidate sampling and approximate best candidate samplign.
 
 ### cpp/
 C++ implementation of best candidate sampling algorithms and function to compute Delta J.
@@ -68,11 +68,18 @@ MODULES_dda_getw = -ldda_tools
 MODULES_dda_getp = -ldda_tools 
 MODULES_dda_getDeltaJ = -ldda_tools 
 
+Modify XTARGETS in Makefile
+XTARGETS += $(TBASE) $(TFLP) $(TNUM) $(TIO) $(TRECO) $(TCALIB) $(TMRI) $(TSIM) $(TSAMPLING)
+
 5) Copy dda_tools.mk to bart/rules
 
-6) Compile the BART code with:
+6) Add the line to build_targets.mk
+TSAMPLING=dda_bc dda_getp dda_getw dda_getDeltaJ
+
+7) Compile the BART code with:
     $ make dda_getp
     $ make dda_getw
     $ make dda_getDeltaJ
     $ make dda_bc
+
 

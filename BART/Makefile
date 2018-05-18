@@ -24,6 +24,7 @@ FFTWTHREADS?=1
 ISMRMRD?=0
 
 DESTDIR ?= /
+PREFIX ?= usr/local/
 
 BUILDTYPE = Linux
 UNAME = $(shell uname -s)
@@ -36,7 +37,31 @@ ifeq ($(UNAME),Darwin)
 	MYLINK = ln -s
 endif
 
-ARFLAGS = r
+ifeq ($(BUILDTYPE), MacOSX)
+	MACPORTS ?= 1
+endif
+
+
+ifeq ($(BUILDTYPE), Linux)
+	# as the defaults changed on most Linux distributions
+	# explicitly specify non-deterministic archives to not break make
+	ARFLAGS ?= rsU
+else
+	ARFLAGS ?= rs
+endif
+
+
+ifeq ($(UNAME),Cygwin)
+	BUILDTYPE = Cygwin
+	NOLAPACKE ?= 1
+endif
+
+ifeq ($(UNAME),CYGWIN_NT-10.0)
+	BUILDTYPE = Cygwin
+	NOLAPACKE ?= 1
+endif
+
+
 
 
 # Paths
@@ -55,7 +80,7 @@ export TOOLBOX_PATH=$(root)
 
 DEPFILE = $(*D)/.$(*F).d
 DEPFLAG = -MMD -MF $(DEPFILE)
-ALLDEPS = $(shell find $(srcdir) -name ".*.d")
+ALLDEPS = $(shell find $(srcdir) utests -name ".*.d")
 
 
 # Compilation flags
@@ -66,15 +91,28 @@ CFLAGS ?= $(OPT) -Wmissing-prototypes
 CXXFLAGS ?= $(OPT)
 
 ifeq ($(BUILDTYPE), MacOSX)
-	CC ?= gcc-mp-4.7
+	CC ?= gcc-mp-6
 else
 	CC ?= gcc
+	# for symbols in backtraces
+	LDFLAGS += -rdynamic
 endif
 
 CXX ?= g++
 
 
 
+# openblas
+
+ifneq ($(BUILDTYPE), MacOSX)
+BLAS_BASE ?= /usr/
+else
+ifeq ($(MACPORTS),1)
+BLAS_BASE ?= /opt/local/
+CPPFLAGS += -DUSE_MACPORTS
+endif
+BLAS_BASE ?= /usr/local/opt/openblas/
+endif
 
 # cuda
 
@@ -104,19 +142,9 @@ ISMRM_BASE ?= /usr/local/ismrmrd/
 
 
 
-
-
-# Main build targets
-
-TBASE=show slice crop resize join transpose zeros ones flip circshift extract repmat bitmask reshape version
-TFLP=scale conj fmac saxpy sdot spow cpyphs creal carg normalize cdf97 pattern nrmse mip wavg
-TNUM=fft fftmod fftshift noise bench threshold conv rss filter
-TRECO=pics pocsense rsense sqpics bpsense itsense nlinv nufft rof sake wave lrmatrix estdims
-TCALIB=ecalib ecaltwo caldir walsh cc calmat svd estvar
-TMRI=homodyne poisson twixread fakeksp
-TSIM=phantom traj
-TIO=toimg
-
+# Main build targets are defined in build_targets.mk so that both CMake and Make can use the same definitions
+# set values for TBASE TFLP TNUM TRECO TCALIB TMRI TSIM TIO in build_targets.mk
+include build_targets.mk
 
 
 
@@ -126,12 +154,11 @@ MODULES_dda_bc = -ldda_tools
 MODULES_dda_getw = -ldda_tools 
 MODULES_dda_getp = -ldda_tools 
 MODULES_dda_getDeltaJ = -ldda_tools 
-MODULES_pics = -lsense -lwavelet2 -liter -llinops -lwavelet3 -llowrank -lnoncart
-MODULES_sqpics = -lsense -lwavelet2 -liter -llinops -lwavelet3 -llowrank -lnoncart
-MODULES_pocsense = -lsense -lwavelet2 -liter -llinops
-MODULES_nlinv = -lnoir -liter
-MODULES_rsense = -lgrecon -lsense -lnoir -lwavelet2 -lcalib -liter -llinops
-MODULES_bpsense = -lsense -lwavelet2 -lnoncart -liter -llinops
+MODULES_pics = -lgrecon -lsense -liter -llinops -lwavelet -llowrank -lnoncart
+MODULES_sqpics = -lsense -liter -llinops -lwavelet -llowrank -lnoncart
+MODULES_pocsense = -lsense -liter -llinops -lwavelet
+MODULES_nlinv = -lnoir -liter -lnlops -llinops
+MODULES_bpsense = -lsense -lnoncart -liter -llinops -lwavelet
 MODULES_itsense = -liter -llinops
 MODULES_ecalib = -lcalib
 MODULES_ecaltwo = -lcalib
@@ -139,23 +166,28 @@ MODULES_caldir = -lcalib
 MODULES_walsh = -lcalib
 MODULES_calmat = -lcalib
 MODULES_cc = -lcalib
+MODULES_ccapply = -lcalib
 MODULES_estvar = -lcalib
 MODULES_nufft = -lnoncart -liter -llinops
 MODULES_rof = -liter -llinops
-MODULES_bench = -lwavelet2 -lwavelet3 -llinops
+MODULES_bench = -lwavelet -llinops
 MODULES_phantom = -lsimu
-MODULES_bart = -lbox -lgrecon -lsense -lnoir -lwavelet2 -liter -llinops -lwavelet3 -llowrank -lnoncart -lcalib -lsimu -lsake -ldfwavelet
+MODULES_bart = -lbox -ldda_tools -lgrecon -lsense -lnoir -liter -llinops -lwavelet -llowrank -lnoncart -lcalib -lsimu -lsake -ldfwavelet -lnlops
 MODULES_sake = -lsake
-MODULES_wave = -liter -lwavelet2 -llinops -lsense
-MODULES_threshold = -llowrank -lwavelet2 -liter -ldfwavelet -llinops
+MODULES_wave = -liter -lwavelet -llinops -lsense
+MODULES_threshold = -llowrank -liter -ldfwavelet -llinops -lwavelet
 MODULES_fakeksp = -lsense -llinops
 MODULES_lrmatrix = -llowrank -liter -llinops
 MODULES_estdims = -lnoncart -llinops
 MODULES_ismrmrd = -lismrm
+MODULES_wavelet = -llinops -lwavelet
 
+
+MAKEFILES = $(root)/Makefiles/Makefile.*
 
 -include Makefile.$(NNAME)
 -include Makefile.local
+-include $(MAKEFILES)
 
 
 ifeq ($(ISMRMRD),1)
@@ -163,10 +195,15 @@ TMRI += ismrmrd
 MODULES_bart += -lismrm
 endif
 
+ifeq ($(NOLAPACKE),1)
+CPPFLAGS += -DNOLAPACKE
+MODULES += -llapacke
+endif
 
-XTARGETS += $(TBASE) $(TFLP) $(TNUM) $(TIO) $(TRECO) $(TCALIB) $(TMRI) $(TSIM)
+
+
+XTARGETS += $(TBASE) $(TFLP) $(TNUM) $(TIO) $(TRECO) $(TCALIB) $(TMRI) $(TSIM) $(TSAMPLING)
 TARGETS = bart $(XTARGETS)
-
 
 
 
@@ -183,13 +220,13 @@ endif
 
 ifeq ($(MAKESTAGE),1)
 .PHONY: doc/commands.txt $(TARGETS)
-default all clean allclean distclean doc/commands.txt doxygen $(TARGETS):
+default all clean allclean distclean doc/commands.txt doxygen test utest gputest $(TARGETS):
 	make MAKESTAGE=2 $(MAKECMDGOALS)
 else
 
 
 CPPFLAGS += $(DEPFLAG) -I$(srcdir)/
-CFLAGS += -std=c99 -I$(srcdir)/
+CFLAGS += -std=gnu11 -I$(srcdir)/
 CXXFLAGS += -I$(srcdir)/
 
 
@@ -221,7 +258,9 @@ CUDA_H :=
 CUDA_L :=  
 endif
 
-NVCCFLAGS = -DUSE_CUDA -Xcompiler -fPIC -Xcompiler -fopenmp -O3 -arch=sm_20 -I$(srcdir)/ -m64 -ccbin $(CC)
+# sm_20 no longer supported in CUDA 9
+GPUARCH_FLAGS ?= 
+NVCCFLAGS = -DUSE_CUDA -Xcompiler -fPIC -Xcompiler -fopenmp -O3 $(GPUARCH_FLAGS) -I$(srcdir)/ -m64 -ccbin $(CC)
 #NVCCFLAGS = -Xcompiler -fPIC -Xcompiler -fopenmp -O3  -I$(srcdir)/
 
 
@@ -244,25 +283,28 @@ endif
 
 # BLAS/LAPACK
 
-BLAS_H :=
-BLAS_L :=
-
 ifeq ($(ACML),1)
 BLAS_H := -I$(ACML_BASE)/include
 BLAS_L := -L$(ACML_BASE)/lib -lgfortran -lacml_mp -Wl,-rpath $(ACML_BASE)/lib
 CPPFLAGS += -DUSE_ACML
 else
+BLAS_H := -I$(BLAS_BASE)/include
 ifeq ($(BUILDTYPE), MacOSX)
-BLAS_L := -lblas -framework Accelerate
+BLAS_L := -L$(BLAS_BASE)/lib -lopenblas
 else
-BLAS_L := -llapack -lblas #-lgfortran
+ifeq ($(NOLAPACKE),1)
+BLAS_L := -L$(BLAS_BASE)/lib -llapack -lblas
+CPPFLAGS += -Isrc/lapacke
+else
+BLAS_L := -L$(BLAS_BASE)/lib -llapacke -lblas
 endif
 endif
+endif
 
 
 
 
-CPPFLAGS += $(FFTW_H)
+CPPFLAGS += $(FFTW_H) $(BLAS_H)
 
 
 
@@ -305,9 +347,7 @@ endif
 ifeq ($(SLINK),1)
 # work around fortran problems with static linking
 LDFLAGS += -static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -Wl,--allow-multiple-definition
-ifneq ($(BUILDTYPE), MacOSX)
-BLAS_L += -lgfortran
-endif
+BLAS_L += -llapack -lblas -lgfortran -lquadmath
 endif
 
 
@@ -332,16 +372,11 @@ XTARGETS:=$(sort $(XTARGETS))
 .gitignore: .gitignore.main Makefile*
 	@echo '# AUTOGENERATED. DO NOT EDIT. (are you looking for .gitignore.main ?)' > .gitignore
 	cat .gitignore.main >> .gitignore
-	@echo $(patsubst %, /%, $(TARGETS)) | tr ' ' '\n' >> .gitignore
+	@echo $(patsubst %, /%, $(TARGETS) $(UTARGETS)) | tr ' ' '\n' >> .gitignore
 
 
 doc/commands.txt: bart
-	@echo AUTOGENERATED. DO NOT EDIT. > doc/commands.new
-	for cmd in $(XTARGETS) ; do 		\
-		printf "\n\n--%s--\n\n" $$cmd ;	\
-		 ./bart $$cmd -h ;		\
-	done >> doc/commands.new
-	$(root)/rules/update-if-changed.sh doc/commands.new doc/commands.txt
+	./rules/update_commands.sh ./bart doc/commands.txt $(XTARGETS)
 
 doxygen: makedoc.sh doxyconfig bart
 	 ./makedoc.sh
@@ -398,9 +433,20 @@ $(TARGETS): % : src/main.c $(srcdir)/%.o $$(MODULES_%) $(MODULES)
 	$(CC) $(LDFLAGS) $(CFLAGS) -Dmain_real=main_$@ -o $@ $+ $(FFTW_L) $(CUDA_L) $(BLAS_L) $(PNG_L) $(ISMRM_L) -lm
 #	rm $(srcdir)/$@.o
 
+UTESTS=$(shell $(root)/utests/utests-collect.sh ./utests/$@.c)
+
+.SECONDEXPANSION:
+$(UTARGETS): % : utests/utest.c utests/%.o $$(MODULES_%) $(MODULES)
+	$(CC) $(LDFLAGS) $(CFLAGS) -DUTESTS="$(UTESTS)" -o $@ $+ $(FFTW_L) $(CUDA_L) $(BLAS_L) -lm
+
+
+# linker script version - does not work on MacOS X
+#	$(CC) $(LDFLAGS) -Wl,-Tutests/utests.ld $(CFLAGS) -o $@ $+ $(FFTW_L) $(CUDA_L) $(BLAS_L) -lm
 
 clean:
 	rm -f `find $(srcdir) -name "*.o"`
+	rm -f utests/*.o
+	rm -f $(patsubst %, %, $(UTARGETS))
 	rm -f $(root)/lib/.*.lock
 
 allclean: clean
@@ -413,19 +459,56 @@ allclean: clean
 distclean: allclean
 
 
+# automatic tests
+
+# system tests
+
+TOOLDIR=$(root)
+TESTS_TMP=$(root)/tests/tmp/$$$$/
+TESTS_OUT=$(root)/tests/out/
+
+
+include $(root)/tests/*.mk
+
+test:	${TESTS}
+
+gputest: ${TESTS_GPU}
+
+pythontest: ${TESTS_PYTHON}
+
+# unit tests
+
+# define space to faciliate running executables
+define \n
+
+
+endef
+
+utests-all: $(UTARGETS)
+	$(patsubst %,$(\n)./%,$(UTARGETS))
+
+utest: utests-all
+	@echo ALL UNIT TESTS PASSED.
+
+
 endif	# MAKESTAGE
 
 
 install: bart $(root)/doc/commands.txt
-	install -d $(DESTDIR)/usr/bin/
-	install bart $(DESTDIR)/usr/bin/
-	install -d $(DESTDIR)/usr/share/doc/bart/
-	install $(root)/doc/*.txt $(root)/README $(DESTDIR)/usr/share/doc/bart/
-	install -d $(DESTDIR)/usr/lib/bart/commands/
+	install -d $(DESTDIR)/$(PREFIX)/bin/
+	install bart $(DESTDIR)/$(PREFIX)/bin/
+	install -d $(DESTDIR)/$(PREFIX)/share/doc/bart/
+	install $(root)/doc/*.txt $(root)/README $(DESTDIR)/$(PREFIX)/share/doc/bart/
+	install -d $(DESTDIR)/$(PREFIX)/lib/bart/commands/
 
 
 # generate release tar balls (identical to github)
 %.tar.gz:
 	git archive --prefix=bart-$(patsubst bart-%.tar.gz,%,$@)/ -o $@ v$(patsubst bart-%.tar.gz,%,$@)
 
+
+
+# symbol table
+bart.syms: bart
+	rules/make_symbol_table.sh bart bart.syms
 
