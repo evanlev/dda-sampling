@@ -1,6 +1,0 @@
-all: 
-	g++ -I/home/egl/matlab/ddsamp/srcpp -L/usr/local/orchestra/cpp/sdk-1.3-24.x86_64/recon/3p/Linux/boost_1_55_0_dev_linux64/lib -o bcfast bcfast.cc dda_utils/dda_utils.cc dda_utils/sampleHeap.cc dda_utils/sample.cc debug/debug.cc misc/misc.cc misc/multind.cc -std=c++11 -lboost_system -lboost_date_time -lboost_thread -lboost_program_options
-	g++ -I/home/egl/matlab/ddsamp/srcpp -L/usr/local/orchestra/cpp/sdk-1.3-24.x86_64/recon/3p/Linux/boost_1_55_0_dev_linux64/lib -o getDeltaJ getDeltaJ.cpp dda_utils/dda_utils.cc dda_utils/sampleHeap.cc dda_utils/sample.cc debug/debug.cc misc/misc.cc misc/multind.cc -std=c++11 -lboost_system -lboost_date_time -lboost_thread -lboost_program_options
-	
-	#g++ -I/opt/local/include -I/home/egl/ddsamp/srcpp -L/usr/local/sdk/recon/3p/mac64/boost_1_55_0_mac64/lib -o getDeltaJ getDeltaJ.cpp dda_utils/dda_utils.cc dda_utils/sampleHeap.cc dda_utils/sample.cc debug/debug.cc misc/misc.cc misc/multind.cc -std=c++11 -lboost_system -lboost_date_time -lboost_thread -lboost_program_options
-	#g++ -I/home/egl/ddsamp/srcpp -L/usr/local/sdk/recon/3p/mac64/boost_1_55_0_mac64/lib -o bcfast bcfast.cc dda_utils/dda_utils.cc dda_utils/sampleHeap.cc dda_utils/sample.cc debug/debug.cc misc/misc.cc misc/multind.cc -std=c++11 -lboost_system -lboost_date_time -lboost_thread -lboost_program_options

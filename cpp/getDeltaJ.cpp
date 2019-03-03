@@ -23,7 +23,7 @@ namespace po = boost::program_options;
 static bool processCommandLine(int argc, char *argv[], string &wfile, string &patfile, string &deltaJfile, int &w_type){
     try{
         //po::options_description desc("Allowed options");
-        po::options_description desc{"Options"};
+        po::options_description desc("Options");
         desc.add_options()
             ("help", "produce help message")
             ("w", po::value<string>(&wfile), "weighting file")

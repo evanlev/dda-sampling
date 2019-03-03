@@ -1,6 +1,6 @@
-#include "../debug/debug.h"
-#include "../misc/misc.h"
-#include "../misc/misc.hpp"
+#include "debug.h"
+#include "misc.h"
+#include "misc.hpp"
 #include "sampleHeap.h"
 #include "sample.h"
 

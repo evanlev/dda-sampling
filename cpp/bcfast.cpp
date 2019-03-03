@@ -8,12 +8,12 @@
 #include <iterator>
 #include <fstream>
 
-#include "misc/mdarray.h"
-#include "misc/multind.h"
-#include "misc/misc.h"
-#include "misc/misc.hpp"
-#include "dda_utils/dda_utils.h"
-#include "debug/debug.h"
+#include "mdarray.h"
+#include "multind.h"
+#include "misc.h"
+#include "misc.hpp"
+#include "dda_utils.h"
+#include "debug.h"
 
 // Faster version
 
@@ -55,7 +55,7 @@ void writePat(const string filename, const long D, const long pat_dims[], const 
 static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &maxST, int &totSamps, int &exact, string &wfile, string &patfile){
     try{
         //po::options_description desc("Allowed options");
-        po::options_description desc{"Options"};
+        po::options_description desc("Options");
         desc.add_options()
             ("help", "produce help message")
             ("max-per-frame", po::value<int>(&maxST), "set max samples per phase")

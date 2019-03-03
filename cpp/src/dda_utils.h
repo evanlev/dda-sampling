@@ -1,6 +1,6 @@
 
-#include "../misc/mdarray.h"
-#include "../misc/misc.h"
+#include "mdarray.h"
+#include "misc.h"
 
 #define MAX_DIMS 16
 #define MAX_T 100

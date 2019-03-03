@@ -13,16 +13,13 @@
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <time.h>
-#include "../misc/cppmap.h"
+#include "cppmap.h"
 
 #define STRSIZE 64
 
 
 using namespace std;
 
-//#include "misc.h"
-//#include "misc/multind.h"
-//#include "cfl.h"
 #include "debug.h"
 
 int debug_level = -1;

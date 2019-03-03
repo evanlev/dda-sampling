@@ -5,7 +5,7 @@
 #include <strings.h>
 #include <stdio.h>
 
-#include "../debug/debug.h"
+#include "debug.h"
 
 #include "multind.h"
 

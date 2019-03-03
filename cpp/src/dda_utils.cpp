@@ -1,12 +1,10 @@
-#include "../misc/misc.h"
-#include "../misc/misc.hpp"
-#include "../misc/multind.h"
-#include "../misc/mdarray.h"
-#include "../debug/debug.h"
-
+#include "misc.h"
+#include "misc.hpp"
+#include "multind.h"
+#include "mdarray.h"
+#include "debug.h"
 #include "dda_utils.h"
 #include "sampleHeap.h"
-//#include "sample.h"
 
 #include <algorithm>
 #include <vector>
@@ -263,7 +261,7 @@ void exactBestCandidate(const int D, double *cost, double *deltaJ,
             const long totSamps){
     //assert(D == 2);
     const long REIM_DIM = 4;
-    long nt = w->dims[D];
+    const long nt = w->dims[D];
     long ksize = md_calc_size(D, w->dims);
     long csize = nt*ksize;
 

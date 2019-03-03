@@ -2,7 +2,7 @@
 #ifndef __DEBUG_H
 #define __DEBUG_H 1
 
-#include "../misc/misc.h"
+#include "misc.h"
 
 #ifdef __cplusplus
 extern "C" {

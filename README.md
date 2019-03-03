@@ -43,12 +43,13 @@ C++ to implement the data structures used in best candidate sampling.
 MATLAB. 
 
 g++ and BART highly recommended for functions to run fast. 
+For cpp version, boost is required. On macOS, run brew install boost with homebrew.
 
 
 ### 2.2. Setup
 
 ##### cpp/
-I need to write a proper Makefile, but it is not hard to compile this code.
+This still needs a proper Makefile. It can compile on Ubuntu 14.04 with g++ 4.8.5
 
 ##### BART/
 

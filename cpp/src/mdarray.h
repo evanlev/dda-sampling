@@ -1,7 +1,7 @@
 #ifndef MDARRAY_H
 #define MDARRAY_H 1
 
-#include "../debug/debug.h"
+#include "debug.h"
 
 // TODO
 // array(sub) = ***
@@ -35,7 +35,7 @@ class MDArray
         memcpy(dims, _dims, D*sizeof(long));
         debug_print_dims(DP_DEBUG3, DIMS, dims);
         md_calc_strides(DIMS, strs, dims, 1);
-        size_t el_size = sizeof(T);
+        el_size = sizeof(T);
         len = md_calc_size(DIMS, dims);
         debug_printf(DP_DEBUG3, "Allocating %d\n", len);
         data = new T[len];
@@ -140,7 +140,7 @@ class MDArray
 
         try{
             // Read header file
-            std::ifstream file_hdr (fname_hdr.c_str() );
+            ifstream file_hdr (fname_hdr.c_str() );
             if (file_hdr.is_open())
             {
                 long sized;

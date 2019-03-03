@@ -6,7 +6,7 @@
 #include <complex.h>
 
 //#include "multind.h"
-#include "../debug/debug.h"
+#include "debug.h"
 #include "misc.h"
 #include "misc.hpp"
 
