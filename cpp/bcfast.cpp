@@ -127,10 +127,11 @@ int main( int argc, char* argv[] )
 #endif
 
     //  Build sparse w
-    //debug_level = DP_ALL;
-    debug_printf(DP_DEBUG3, "building sparse w, K = %d\n", K);
+    debug_level = DP_ALL;
+
     SparseW wsp;
     if( !exact ){
+        debug_printf(DP_DEBUG3, "building sparse w, K = %d\n", K);
         if( K ){
             sparsifyWToK(PE_DIMS, &wsp, wmd, K);
         }else{
@@ -138,14 +139,14 @@ int main( int argc, char* argv[] )
         }
     }
     
-    //debug_printf(DP_INFO, "printing wsp\n");
-    //print_wsp(&wsp);
+    debug_printf(DP_INFO, "printing wsp\n");
+    printWsp(&wsp);
 
     // Generate pat
     int *pat = new int[N];
     memset(pat, 0, N*sizeof(int));
     double cost;
-    double *deltaJ = new double[N];
+    MDArray<double> deltaJ(3, pat_dims);
 
     if( exact ){
         // Exact version, slower
@@ -172,7 +173,6 @@ int main( int argc, char* argv[] )
     // Clean up
     delete[] pat;
     delete wmd;
-    delete[] deltaJ;
 
     return 0;
 }

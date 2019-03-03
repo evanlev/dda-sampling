@@ -2,6 +2,7 @@
 #define SAMPLEHEAP_H
 
 #include "sample.h"
+#include "mdarray.h"
 #include <vector>
 
 using std::vector;
@@ -10,17 +11,17 @@ class SampleHeap {
     private:
         unsigned long size; 
         unsigned long ksp_size;
-        std::vector<Sample *> arr;
+        std::vector<Sample> arr;
         std::vector<int> kt2idx; // kt2idx[kt] = element of arr with this sample
     public:
-        SampleHeap(const long ksp_size, const double *deltaJ);
+        SampleHeap(const long ksp_size, const MDArray<double> &deltaJ);
         ~SampleHeap();
 
-        unsigned long getSize(){
+        unsigned long getSize() const {
             return size;
         }
 
-        int getKt2idx(int nodeIndex);
+        int getKt2idx(int nodeIndex) const ;
 
         static inline int getParentIndex(int nodeIndex);
 
@@ -36,18 +37,18 @@ class SampleHeap {
 
         void increaseKey(int nodeIndex, double delta);
 
-        inline void copyTo(int nodeIndex, Sample *data);
+        inline void copyTo(const int nodeIndex, const Sample &data);
 
-        void push(Sample *data);
+        void push(Sample data);
 
-        Sample * pop();
+        Sample pop();
 
-        Sample * getArr(int idx);
+        Sample getArr(int idx) const;
+
+        void Print(const long dims[]) const;
+
+        bool Verify() const;
 };
-/*
-*/
-
-void printHeap(SampleHeap *heap, const long dims[]);
 
 #endif
 

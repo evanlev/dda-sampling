@@ -19,9 +19,10 @@ inline int SampleHeap::getLeftChildIndex(int nodeIndex){
     return 2*(nodeIndex + 1) - 1;
 }
 inline void SampleHeap::swapSamples(int i1, int i2){
-    swap(&arr[i1], &arr[i2], sizeof(Sample *));
-    kt2idx[arr[i1]->getKT()] = i1;
-    kt2idx[arr[i2]->getKT()] = i2;
+    //swap(&arr[i1], &arr[i2], sizeof(Sample *));
+    std::swap(arr[i1], arr[i2]);
+    kt2idx[arr[i1].getIndex()] = i1;
+    kt2idx[arr[i2].getIndex()] = i2;
 }
 
 // Percolate down for pop
@@ -34,12 +35,12 @@ inline void SampleHeap::percolateDown(int nodeIndex){
         childIndexR = getRightChildIndex(nodeIndex); 
 
         int smallest;
-        if( childIndexL < size && *arr[childIndexL] < *arr[nodeIndex] ){
+        if( childIndexL < size && arr[childIndexL] < arr[nodeIndex] ){
             smallest = childIndexL;
         }else{
             smallest = nodeIndex;
         }
-        if( childIndexR < size && *arr[childIndexR] < *arr[smallest] ){
+        if( childIndexR < size && arr[childIndexR] < arr[smallest] ){
             smallest = childIndexR;
         }
         if( smallest == nodeIndex ){
@@ -57,7 +58,7 @@ inline void SampleHeap::percolateUp(int nodeIndex){
     // Percolate up
     int parentIndex = getParentIndex(nodeIndex);
     //debug_printf(DP_INFO, "Node index: %d, parent: %d\n", nodeIndex, parentIndex);
-    while( nodeIndex != 0 && *arr[nodeIndex] < *arr[parentIndex] ){
+    while( nodeIndex != 0 && arr[nodeIndex] < arr[parentIndex] ){
         //debug_printf(DP_INFO, "Swap...\n");
         swapSamples(nodeIndex, parentIndex);
         //debug_printf(DP_INFO, "Done Swap...\n");
@@ -66,17 +67,17 @@ inline void SampleHeap::percolateUp(int nodeIndex){
     }
 }
 
-int SampleHeap::getKt2idx(int nodeIndex){
+int SampleHeap::getKt2idx(int nodeIndex) const {
     return kt2idx[nodeIndex];
 }
 
-Sample * SampleHeap::getArr(int idx){
+Sample SampleHeap::getArr(int idx) const {
     return arr[idx];
 }
 
 // Increase key
 void SampleHeap::increaseKey(int nodeIndex, double delta){
-    arr[nodeIndex]->dJ += delta;
+    arr[nodeIndex].dJ += delta;
     if( delta > 0 ){
         percolateDown(nodeIndex);
     }else{
@@ -84,17 +85,17 @@ void SampleHeap::increaseKey(int nodeIndex, double delta){
     }
 }
     
-inline void SampleHeap::copyTo(int nodeIndex, Sample *data){
+inline void SampleHeap::copyTo(const int nodeIndex, const Sample &data){
     if( nodeIndex >= size || nodeIndex < 0 ){
         debug_printf(DP_INFO, "size: %d, nodeIndex: %d\n", size, nodeIndex);
         assert(0);
     }
     arr[nodeIndex] = data;
-    kt2idx[data->getKT()] = nodeIndex;
+    kt2idx[data.getIndex()] = nodeIndex;
 }
 
 // Push data onto the heap
-void SampleHeap::push(Sample *data){
+void SampleHeap::push(Sample data){
 
     if( size == arr.size() ){
         debug_printf(DP_INFO, "resizing...\n");
@@ -108,8 +109,8 @@ void SampleHeap::push(Sample *data){
 }
 
 // Pop a sample from the heap
-Sample* SampleHeap::pop(){
-    Sample* res = arr[0];
+Sample SampleHeap::pop(){
+    Sample res = arr[0];
     size--;
     copyTo(0, arr[size]);
 
@@ -121,15 +122,12 @@ Sample* SampleHeap::pop(){
 SampleHeap::~SampleHeap(){
     debug_printf(DP_DEBUG3, "Destructor...\n");
     long size = getSize();
-    for( unsigned int kt_ind = 0 ; kt_ind < size ; kt_ind++ ){
-        delete arr[kt_ind];
-    }
     debug_printf(DP_DEBUG3, "Destructor done\n");
 }
 
 
-SampleHeap::SampleHeap(const long _ksp_size, const double *deltaJ){
-    debug_printf(DP_DEBUG3, "Building heap...\n");
+SampleHeap::SampleHeap(const long _ksp_size, const MDArray<double> &deltaJ){
+    debug_printf(DP_DEBUG3, "Building heap, size %d...\n", _ksp_size);
 
     // k-space size including time, mostly for debugging
     ksp_size = _ksp_size;
@@ -142,8 +140,7 @@ SampleHeap::SampleHeap(const long _ksp_size, const double *deltaJ){
         //*iter = -1;
         kt2idx[i] = -1;
     }
-    /*
-    */
+
     // Heap size = 0
     size = 0;
     // Push in random order to break ties randomly
@@ -153,12 +150,12 @@ SampleHeap::SampleHeap(const long _ksp_size, const double *deltaJ){
     std::random_shuffle(perm.begin(), perm.end());
     for( int kt_ind = 0 ; kt_ind < ksp_size ; kt_ind++ ){
         assert(perm[kt_ind] < ksp_size && perm[kt_ind] >= 0);
-        push(new Sample(perm[kt_ind], deltaJ[perm[kt_ind]]));
+        push(Sample(perm[kt_ind], deltaJ[perm[kt_ind]]));
     }
     debug_printf(DP_DEBUG3, "heap size: %d\n", getSize());
 }
 
-void printHeap(SampleHeap *heap, const long dims[]){
+void SampleHeap::Print(const long dims[]) const {
     /*
     debug_printf(DP_INFO, "Indices = [\n");
     for( unsigned long i = 0 ; i < heap.getSize() ; i++ ){
@@ -167,30 +164,34 @@ void printHeap(SampleHeap *heap, const long dims[]){
     debug_printf(DP_INFO, "];\n");
     */
     
-    for( unsigned long i = 0 ; i < heap->getSize() ; i++ ){
+    for( unsigned long i = 0 ; i < this->getSize() ; i++ ){
         long kt_sub[3];
-        ind2sub<long>(3, dims, kt_sub, heap->getArr(i)->getKT());
+        ind2sub<long>(3, dims, kt_sub, this->getArr(i).getIndex());
         debug_printf(DP_INFO, "deltaJ(%d,%d,%d) = %f;\n", 
                     kt_sub[0]+1, kt_sub[1]+1, deltaJPrintCount,
-                    heap->getArr(i)->dJ);
+                    this->getArr(i).dJ);
     }
     deltaJPrintCount++;
 
     debug_printf(DP_INFO, "SampleHeap = [\n");
-    for( unsigned long i = 0 ; i < heap->getSize() ; i++ ){
+    for( unsigned long i = 0 ; i < this->getSize() ; i++ ){
         long kt_sub[3];
-        ind2sub<long>(3, dims, kt_sub, heap->getArr(i)->getKT());
-        debug_printf(DP_INFO, "%d %d %f; ...\n", 1+kt_sub[0], 1+kt_sub[1], heap->getArr(i)->dJ);
+        ind2sub<long>(3, dims, kt_sub, this->getArr(i).getIndex());
+        debug_printf(DP_INFO, "%d %d %f; ...\n", 1+kt_sub[0], 1+kt_sub[1], this->getArr(i).dJ);
     }
     debug_printf(DP_INFO, "];\n");
-    
+}
+
+bool SampleHeap::Verify() const {
     // Check heap kt2idx array
-    for( unsigned long kt_ind = 0 ; kt_ind < heap->getSize() ; kt_ind++ ){
-        if(heap->getKt2idx(kt_ind) != -1 && heap->getArr(heap->getKt2idx(kt_ind))->getKT() != kt_ind){
-            debug_printf(DP_ERROR, "kt_ind: %lu, kt: %ld, size: %ld\n", kt_ind, heap->getArr(heap->getKt2idx(kt_ind))->getKT(), heap->getSize());
-            assert(0);
+    for( unsigned long kt_ind = 0 ; kt_ind < this->getSize() ; kt_ind++ ){
+        if(this->getKt2idx(kt_ind) != -1 && this->getArr(this->getKt2idx(kt_ind)).getIndex() != kt_ind){
+            debug_printf(DP_ERROR, "kt_ind: %lu, kt: %ld, size: %ld\n", kt_ind, 
+                this->getArr(this->getKt2idx(kt_ind)).getIndex(), this->getSize());
+            return false;
         }
     }
+    return true;
 }
 
 

@@ -1,16 +1,18 @@
-//#ifndef SAMPLE_H
-//#define SAMPLE_H
-#pragma once
+#ifndef SAMPLE_H
+#define SAMPLE_H
 
 class Sample {
     private:
         int kt;
     public:
         double dJ;
+        Sample() {
+            // empty
+        }
         Sample(const int _kt, const double _dJ);
 
-        int getKT();
-        //inline bool operator<(const Sample& rhs);
+        int getIndex() const;
+
         inline bool operator<(const Sample& rhs ){
             if( dJ < rhs.dJ ){
                 return true;
@@ -25,8 +27,6 @@ class Sample {
                 return false;
             }
         }
-        //inline bool operator<(const Sample& rhs);
 };
 
-//#endif
-
+#endif

@@ -6,10 +6,10 @@
 
 #include <boost/program_options.hpp>
 
-#include "debug/debug.h"
-#include "dda_utils/dda_utils.h"
-#include "misc/misc.h"
-#include "misc/multind.h"
+#include "debug.h"
+#include "dda_utils.h"
+#include "misc.h"
+#include "multind.h"
 
 
 static int verbose;
@@ -73,7 +73,7 @@ int main( int argc, char* argv[] )
     MDArray<int> *pat = MDArray<int>::read_array(patfile);
 
     // Create output
-    MDArray<double> *deltaJ = new MDArray<double>(pat->D, pat->dims);
+    MDArray<double> deltaJ(pat->D, pat->dims);
 
     // Convert pattern to sample lists
     long Nt = pat->dims[PE_DIMS];
@@ -83,19 +83,13 @@ int main( int argc, char* argv[] )
     delete pat;
     
     // Compute Delta J
-    if( w_type == 1 || w_type == 2 ){
-        assert(wmd->dims[4] == 1);
-        computeDeltaJ2(PE_DIMS, deltaJ->data, wmd, samples, Nsamps, w_type);
-    }else{
-        computeDeltaJ(PE_DIMS, deltaJ, wmd, samples, Nsamps);
-    }
+    computeDeltaJ(PE_DIMS, deltaJ, wmd, samples, Nsamps);
 
     // Write output file
-    MDArray<double>::write_array(deltaJfile, deltaJ);
+    MDArray<double>::write_array(deltaJfile, &deltaJ);
 
     // Clean up
     delete wmd;
-    delete deltaJ;
     for( int t = 0 ; t < Nt ; t++ ){
         if( Nsamps[t] > 0 ){
             delete [] samples[t];

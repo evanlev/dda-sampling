@@ -24,7 +24,7 @@ class MDArray
 
     // Constructor
     MDArray(){
-        data = NULL;
+        data = nullptr;
     }
     MDArray(const long _D, const long *_dims){
         D = _D;
@@ -41,6 +41,11 @@ class MDArray
         data = new T[len];
         debug_printf(DP_DEBUG3, "Done with MDArray constructor\n");
     }
+
+    void Clear() {
+        memset(data, 0, sizeof(T) * len);
+    }
+
     // Destructor
     ~MDArray(){
         if( data ){
@@ -100,7 +105,15 @@ class MDArray
     Proxy operator[] (int index) { return Proxy(*this, index); }
 #endif
 
-    T operator[] (int index) { return this->data[index]; }
+    T operator[] (int index) const {
+        assert( index < len && index >= 0 );
+        return this->data[index]; 
+    }
+
+    T& operator[] (int index) { 
+        assert( index < len && index >= 0 );
+        return this->data[index];
+    }
 
     static void write_array(string filename, MDArray<T> *array){
         debug_printf(DP_DEBUG1, "Writing %s...", filename.c_str());

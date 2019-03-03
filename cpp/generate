@@ -1,0 +1,1 @@
+./bcfast --max-per-frame 100 --K 16 --w ../data/w --S 90 --pat pat
