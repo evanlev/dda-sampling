@@ -155,7 +155,7 @@ void approxBestCandidate(const int D, double *cost, MDArray<double> &deltaJ,
 
     // Heapify delta J, later can use the fact that deltaJ is constant to speed this up
     debug_printf(DP_INFO, "Construct heap...\n");
-    SampleHeap heap(csize, deltaJ);
+    SampleHeap heap(deltaJ);
 
     // Best candidate selection loop
     debug_printf(DP_INFO, "Main loop...\n");
@@ -166,16 +166,16 @@ void approxBestCandidate(const int D, double *cost, MDArray<double> &deltaJ,
         const Sample &snew = heap.getArr(0);
         
         long k_new_sub[D+1];
-        ind2sub<long>(D+1, wsp->dims, k_new_sub, snew.getIndex());
+        ind2sub<long>(D+1, wsp->dims, k_new_sub, snew.getKTIndex());
         long t_new = k_new_sub[D];
 
         debug_printf(DP_DEBUG4, "Sampling (%d %d)\n", 1+k_new_sub[0], 1+k_new_sub[1]);
 
-        mask[snew.getIndex()]++;
+        mask[snew.getKTIndex()]++;
         nSampsCurrent[t_new]++;
 
         // --- Update total cost
-        *cost += deltaJ[snew.getIndex()];
+        *cost += deltaJ[snew.getKTIndex()];
 
         // --- Update insert cost (deltaJ), even for frames that are full
         for( long t = 0 ; t < nt ; t++ ){
