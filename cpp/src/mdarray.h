@@ -16,16 +16,13 @@
 template<int Dims, typename T>
 class MDArray 
 {
-    const static int kDims = Dims;
+    private:
+        long len;
     public:
+        const static int kDims = Dims;
         T *data;
         long strs[kDims];
         long dims[kDims];
-        long len;
-
-    long length(){
-        return len;
-    }
 
     void init(const long _dims[]){
         debug_printf(DP_DEBUG3, "Copying dims\n");
@@ -36,6 +33,10 @@ class MDArray
         debug_printf(DP_DEBUG3, "Allocating %d\n", len);
         data = new T[len];
         debug_printf(DP_DEBUG3, "Done with MDArray constructor\n");
+    }
+
+    long length() const {
+        return len;
     }
 
     // Constructor
@@ -173,12 +174,12 @@ class MDArray
     Proxy operator[] (int index) { return Proxy(*this, index); }
 #endif
 
-    T operator[] (int index) const {
+    const T& operator[] (const int index) const {
         assert( index < len && index >= 0 );
         return this->data[index]; 
     }
 
-    T& operator[] (int index) { 
+    T& operator[] (const int index) { 
         assert( index < len && index >= 0 );
         return this->data[index];
     }

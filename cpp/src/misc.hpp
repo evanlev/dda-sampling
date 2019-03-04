@@ -91,9 +91,10 @@ sub2ind(const unsigned int D, const long *strides, const T *sub){
 
 /* convert linear index to MD subscript */
 template<typename T>
-void
-ind2subv(const vector<T> &dims, vector<T> &subs, const long ind)
+vector<T>
+ind2subv(const vector<T> &dims, const long ind)
 {
+    vector<T> subs(dims.size());
     const long D = (signed) dims.size();
     long dims_prod = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<T>());
     long ind_r = ind;

@@ -70,6 +70,9 @@ target_link_libraries( getDeltaJ ${PROJECT_NAME} ${SOURCES} ${Boost_LIBRARIES} )
 add_executable( testHeap testHeap.cpp )
 target_link_libraries( testHeap ${PROJECT_NAME} ${SOURCES} ${Boost_LIBRARIES} )
 
+add_executable( testGenerator testGenerator.cpp )
+target_link_libraries( testGenerator ${PROJECT_NAME} ${SOURCES} ${Boost_LIBRARIES} )
+
 #target_link_libraries( bcfast ${PROJECT_NAME} ${SOURCES} )
 
 

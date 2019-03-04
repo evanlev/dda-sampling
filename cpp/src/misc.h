@@ -110,6 +110,8 @@ long argmin(const long N, const T *x){
     min_aux<T>(&min_el, &min_val, N, x);
     return min_el;
 }
+
+
 /* sub 
  * dst = src1 - src2
  * */

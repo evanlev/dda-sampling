@@ -110,15 +110,15 @@ Sample SampleHeap::pop(){
 }
 
 SampleHeap::SampleHeap(const MDArray<3, double> &deltaJ){
-    debug_printf(DP_DEBUG3, "Building heap, size %d...\n", deltaJ.len);
-    kt2idx.resize(deltaJ.len);
+    debug_printf(DP_DEBUG3, "Building heap, size %d...\n", deltaJ.length());
+    kt2idx.resize(deltaJ.length());
 
     // Push in random order to break ties randomly
-    vector<int> perm(deltaJ.len);
-    for( int i = 0 ; i < deltaJ.len ; ++i )
+    vector<int> perm(deltaJ.length());
+    for( int i = 0 ; i < deltaJ.length() ; ++i )
         perm[i] = i;
     std::random_shuffle(perm.begin(), perm.end());
-    for( int kt_ind = 0 ; kt_ind < deltaJ.len ; kt_ind++ ){
+    for( int kt_ind = 0 ; kt_ind < deltaJ.length() ; kt_ind++ ){
         push(Sample(perm[kt_ind], deltaJ[perm[kt_ind]]));
     }
     debug_printf(DP_DEBUG3, "heap size: %d\n", Size());

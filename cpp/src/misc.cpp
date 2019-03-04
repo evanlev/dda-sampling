@@ -11,43 +11,7 @@
 #include "misc.hpp"
 #include "config.h"
 
-using std::complex;
-
-/* Sampling */
-static vector<long> find_samples_1frame(const int *mask, const long dims[]){
-    vector<long> samples;
-    long nksp_pts = md_calc_size(kPhaseEncodeDims, dims);
-    long tail = 0;
-    for( long ik = 0 ; ik < nksp_pts ; ik++ ){
-        if( 1 == mask[ik] ){
-            // TODO push back vector
-            long ik_sub[kPhaseEncodeDims];
-            ind2sub<long>(kPhaseEncodeDims, dims, ik_sub, ik);
-            for( int d = 0 ; d < kPhaseEncodeDims ; d++ ){
-                samples.push_back(ik_sub[d]);
-            }
-        }
-    }
-    return samples;
-}
-
-/* Sampling */
-std::vector<std::vector<long> > find_samples(const MDArray<3, int> &mask){
-    long Nt = mask.dims[kPhaseEncodeDims];
-    
-    vector<vector<long> > samples;
-    samples.resize(Nt);
-
-    long nksp_pts = md_calc_size(kPhaseEncodeDims, mask.dims);
-    for( int t = 0 ; t < Nt ; t++ ){
-        const int* mask_t = &mask.data[nksp_pts*t];
-        samples[t] = find_samples_1frame(mask_t, mask.dims);
-    }
-    return samples;
-}
-
-
-
+//using std::complex;
     
 void debug_print_arr(const int level, const long N, const double *arr){
     debug_printf(level, "[");
@@ -62,7 +26,6 @@ void debug_print_arr(const int level, const long N, const double *arr){
 double kthLargestDouble(const long N, const double *arr, long k){
     return kthLargest<double>(N, arr, k);
 }
-
 
 /*
  * ----- Vector operations

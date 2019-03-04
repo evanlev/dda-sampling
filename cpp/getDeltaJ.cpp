@@ -18,7 +18,7 @@ namespace po = boost::program_options;
 /*
  * Use boost to process command line arguments
  */
-static bool processCommandLine(int argc, char *argv[], string &wfile, string &patfile, string &deltaJfile, int &w_type){
+static bool processCommandLine(int argc, char *argv[], string &wfile, string &patfile, string &deltaJfile){
     try{
         //po::options_description desc("Allowed options");
         po::options_description desc("Options");
@@ -27,7 +27,6 @@ static bool processCommandLine(int argc, char *argv[], string &wfile, string &pa
             ("w", po::value<string>(&wfile), "weighting file")
             ("pat", po::value<string>(&patfile), "pattern file")
             ("dJ", po::value<string>(&deltaJfile), "output deltaJ file")
-            ("w_type", po::value<int>(&w_type), "1 => <w1,p1>, 2 => <w2,p2>")
             ("debug", po::value<int>(&debug_level), "debug level")
         ;
 
@@ -58,27 +57,22 @@ static bool processCommandLine(int argc, char *argv[], string &wfile, string &pa
 int main( int argc, char* argv[] )
 {
     // Process arguments
-    string wfile, patfile, deltaJfile;
-    int w_type = 3;
-    if( !processCommandLine(argc, argv, wfile, patfile, deltaJfile, w_type) ){
+    string wfile, mask_file, deltaJ_file;
+    if( !processCommandLine(argc, argv, wfile, mask_file, deltaJ_file) ){
         return 0;
     }
 
     // Read in w from wfile
-    MDArray<4, double> wmd(wfile);
+    MDArray<4, double> kernel(wfile);
 
     // Read in pattern
-    MDArray<3, int> pat(patfile);
-
-    // Convert pattern to sample lists
-    long Nt = pat.dims[kPhaseEncodeDims];
-    vector<vector<long> > samples = find_samples(pat);
+    MDArray<3, int> mask(mask_file);
 
     // Compute Delta J
-    MDArray<3, double> deltaJ = computeDeltaJ(wmd, samples);
+    MDArray<3, double> deltaJ = computeDeltaJ(kernel, mask);
 
     // Write output file
-    deltaJ.Write(deltaJfile);
+    deltaJ.Write(deltaJ_file);
     
     return 0;
 }
