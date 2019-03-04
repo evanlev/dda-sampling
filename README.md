@@ -1,4 +1,7 @@
-# Arbitrary Cartesian Sampling Tools
+# On-the-fly Adaptive k-Space Sampling Using Moment-based Spectral Analysis
+
+Update 3/4/19: I am in the process of cleaning up the C++ version and creating cmake files. 
+This was originally ported from the C version and did not fully exploit C++ constructs.
 
 DISCLAIMER: This is research done at Stanford University. We do not 
 guarantee that the code is error-free. Please contact the author if you 
@@ -43,13 +46,12 @@ C++ to implement the data structures used in best candidate sampling.
 MATLAB. 
 
 g++ and BART highly recommended for functions to run fast. 
-For cpp version, boost is required. On macOS, run brew install boost with homebrew.
-
+For cpp version, cmake and boost are required. On macOS, run "brew install boost" with homebrew.
 
 ### 2.2. Setup
 
 ##### cpp/
-This still needs a proper Makefile. It can compile on Ubuntu 14.04 with g++ 4.8.5
+t can compile on Ubuntu 14.04 with g++ 4.8.5
 
 ##### BART/
 
