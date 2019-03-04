@@ -109,7 +109,7 @@ Sample SampleHeap::pop(){
     return result;
 }
 
-SampleHeap::SampleHeap(const MDArray<double> &deltaJ){
+SampleHeap::SampleHeap(const MDArray<3, double> &deltaJ){
     debug_printf(DP_DEBUG3, "Building heap, size %d...\n", deltaJ.len);
     kt2idx.resize(deltaJ.len);
 

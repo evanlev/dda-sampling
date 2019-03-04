@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.4)
 project(sampling)
 
 set(HEADERS
+    src/config.h
     src/dda_utils.h
     src/sample.h
     src/sampleHeap.h

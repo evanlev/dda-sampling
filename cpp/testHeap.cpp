@@ -7,6 +7,7 @@
 #include <iterator>
 #include <fstream>
 
+#include "config.h"
 #include "mdarray.h"
 #include "multind.h"
 #include "misc.h"
@@ -32,14 +33,13 @@ static bool CheckHeap(const SampleHeap &heap) {
 int main( int argc, char* argv[] )
 {
     // Dimensions
-    const long pat_dims[3] = {7, 9, 2};
-    const long N = md_calc_size(3, pat_dims);
+    const long pat_dims[kPhaseEncodeDims + 1] = {7, 9, 2};
+    const long N = md_calc_size(kPhaseEncodeDims + 1, pat_dims);
 
-    //  Build sparse w
-    debug_level = DP_ALL;
+    //debug_level = DP_ALL;
 
     // Random cost
-    MDArray<double> deltaJ(3, pat_dims);
+    MDArray<3, double> deltaJ(pat_dims);
     for( int i = 0 ; i < N ; i++ ){
         deltaJ[i] = static_cast<double>(rand() % 1000);
     }
@@ -61,6 +61,8 @@ int main( int argc, char* argv[] )
     }
     assert(costs.size() == N);
     assert(std::is_sorted(costs.begin(), costs.end()));
+
+    printf("TEST PASSED!\n");
 
     return 0;
 }

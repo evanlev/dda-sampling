@@ -15,7 +15,7 @@ class SampleHeap {
         inline void copyTo(const int nodeIndex, const Sample &data);
 
     public:
-        SampleHeap(const MDArray<double> &deltaJ);
+        SampleHeap(const MDArray<3, double> &deltaJ);
 
         unsigned long Size() const {
             return static_cast<unsigned long>(arr.size());

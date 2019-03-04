@@ -14,6 +14,7 @@
 #include "misc.hpp"
 #include "dda_utils.h"
 #include "debug.h"
+#include "config.h"
 
 // Faster version
 
@@ -106,73 +107,67 @@ int main( int argc, char* argv[] )
         return 0;
     }
 
-    // Read in w from wfile
-    MDArray<double> *wmd = MDArray<double>::read_array(wfile);
-    
+    // Read in the kernel w from wfile
+    MDArray<4, double> kernel(wfile);
+
     // Output dims
-    long nt = wmd->dims[PE_DIMS];
-    long pat_dims[wmd->D];
-    md_select_dims(wmd->D, 7u, pat_dims, wmd->dims);
+    long nt = kernel.dims[kPhaseEncodeDims];
+    long pat_dims[4];
+    md_select_dims(4, 7u, pat_dims, kernel.dims);
     long N = md_calc_size(3, pat_dims);
 
     long maxS[pat_dims[2]];
     for( int i = 0 ; i < pat_dims[2] ; i++ )
         maxS[i] = maxST;
 
-    //cout << wmd->toString() << endl;
+    //cout << kernel.toString() << endl;
 #if 0
-    for( long i = 0 ; i < wmd->len ; ++i ){
-        debug_printf(DP_INFO, "w[%d] = %f\n", i, wmd->data[i]);
+    for( long i = 0 ; i < kernel.len ; ++i ){
+        debug_printf(DP_INFO, "w[%d] = %f\n", i, kernel.data[i]);
     }
 #endif
 
     //  Build sparse w
     debug_level = DP_ALL;
 
-    SparseW wsp;
+    SparseKernel sprase_kernel;
     if( !exact ){
         debug_printf(DP_DEBUG3, "building sparse w, K = %d\n", K);
         if( K ){
-            sparsifyWToK(PE_DIMS, &wsp, wmd, K);
+            sprase_kernel = sparsifyWToK(kernel, K);
         }else{
-            sparsifyW(PE_DIMS, &wsp, wmd, T);
+            sprase_kernel = sparsifyW(kernel, T);
         }
     }
-    
-    debug_printf(DP_INFO, "printing wsp\n");
-    printWsp(&wsp);
+    sprase_kernel.Print();
 
     // Generate pat
-    int *pat = new int[N];
-    memset(pat, 0, N*sizeof(int));
     double cost;
-    MDArray<double> deltaJ(3, pat_dims);
+    MDArray<3, int> pat(pat_dims);
+    pat.Clear();
+    MDArray<3, double> deltaJ(pat_dims);
 
     if( exact ){
         // Exact version, slower
         long *samples[nt];
         for( long t = 0 ; t < nt ; t++ ){
             if( maxS[t] > 0 )
-                samples[t] = new long[PE_DIMS*maxS[t]];
+                samples[t] = new long[kPhaseEncodeDims*maxS[t]];
         }
-        exactBestCandidate(PE_DIMS, &cost, deltaJ, pat, wmd, samples, maxS, totSamps);
+        exactBestCandidate(kPhaseEncodeDims, cost, deltaJ, pat.data, kernel, samples, maxS, totSamps);
         for( long t = 0 ; t < nt ; t++ ){
             if( maxS[t] > 0 )
                 delete[] samples[t];
         }
     }else{
         // Faster version using a heap. Faster if w is sparse enough
-        approxBestCandidate(PE_DIMS, &cost, deltaJ, pat, &wsp, maxS, totSamps);
+        approxBestCandidate(kPhaseEncodeDims, cost, deltaJ, pat.data, sprase_kernel, maxS, totSamps);
     }
 
     // Write out pattern
     debug_printf(DP_INFO, "Writing pattern\n");
-    writePat(patfile, 3, pat_dims, pat);
+    writePat(patfile, 3, pat_dims, pat.data);
     debug_printf(DP_INFO, "Done writing pattern\n");
-
-    // Clean up
-    delete[] pat;
-    delete wmd;
 
     return 0;
 }

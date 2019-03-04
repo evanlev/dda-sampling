@@ -11,8 +11,6 @@
 #include "misc.h"
 #include "multind.h"
 
-
-static int verbose;
 using namespace std;
 
 namespace po = boost::program_options;
@@ -67,34 +65,21 @@ int main( int argc, char* argv[] )
     }
 
     // Read in w from wfile
-    MDArray<double> *wmd = MDArray<double>::read_array(wfile);
+    MDArray<4, double> wmd(wfile);
 
     // Read in pattern
-    MDArray<int> *pat = MDArray<int>::read_array(patfile);
-
-    // Create output
-    MDArray<double> deltaJ(pat->D, pat->dims);
+    MDArray<3, int> pat(patfile);
 
     // Convert pattern to sample lists
-    long Nt = pat->dims[PE_DIMS];
-    long *samples[Nt];
-    long Nsamps[Nt];
-    find_samples(samples, Nsamps, pat->data, pat->dims, PE_DIMS);
-    delete pat;
-    
+    long Nt = pat.dims[kPhaseEncodeDims];
+    vector<vector<long> > samples = find_samples(pat);
+
     // Compute Delta J
-    computeDeltaJ(PE_DIMS, deltaJ, wmd, samples, Nsamps);
+    MDArray<3, double> deltaJ = computeDeltaJ(wmd, samples);
 
     // Write output file
-    MDArray<double>::write_array(deltaJfile, &deltaJ);
-
-    // Clean up
-    delete wmd;
-    for( int t = 0 ; t < Nt ; t++ ){
-        if( Nsamps[t] > 0 ){
-            delete [] samples[t];
-        }
-    }
+    deltaJ.Write(deltaJfile);
+    
     return 0;
 }
 

@@ -9,38 +9,44 @@
 #include "debug.h"
 #include "misc.h"
 #include "misc.hpp"
+#include "config.h"
 
 using std::complex;
 
 /* Sampling */
-void find_samples(long *samples[], long Nsamps[], const int *mask, const long mask_dims[], const int nksp_dims){
-    long Nt = mask_dims[nksp_dims];
-    long nksp_pts = md_calc_size(nksp_dims, mask_dims);
-    for( int t = 0 ; t < Nt ; t++ ){
-        const int* maskb = &mask[nksp_pts*t];
-        Nsamps[t] = sum<int>(nksp_pts, maskb);
-        if( Nsamps[t] > 0 ){
-            samples[t] = new long[Nsamps[t]*nksp_dims];
-            find_samples_1frame(samples[t], maskb, mask_dims, nksp_dims);
-        }
-    }
-}
-
-/* Sampling */
-void find_samples_1frame(long *samples, const int *mask, const long mask_dims[], const int D){
-    long nksp_pts = md_calc_size(D, mask_dims);
+static vector<long> find_samples_1frame(const int *mask, const long dims[]){
+    vector<long> samples;
+    long nksp_pts = md_calc_size(kPhaseEncodeDims, dims);
     long tail = 0;
     for( long ik = 0 ; ik < nksp_pts ; ik++ ){
         if( 1 == mask[ik] ){
-            long ik_sub[D];
-            ind2sub<long>(D, mask_dims, ik_sub, ik);
-            for( int d = 0 ; d < D ; d++ ){
-                samples[D*tail + d] = ik_sub[d];
+            // TODO push back vector
+            long ik_sub[kPhaseEncodeDims];
+            ind2sub<long>(kPhaseEncodeDims, dims, ik_sub, ik);
+            for( int d = 0 ; d < kPhaseEncodeDims ; d++ ){
+                samples.push_back(ik_sub[d]);
             }
-            tail++;
         }
     }
+    return samples;
 }
+
+/* Sampling */
+std::vector<std::vector<long> > find_samples(const MDArray<3, int> &mask){
+    long Nt = mask.dims[kPhaseEncodeDims];
+    
+    vector<vector<long> > samples;
+    samples.resize(Nt);
+
+    long nksp_pts = md_calc_size(kPhaseEncodeDims, mask.dims);
+    for( int t = 0 ; t < Nt ; t++ ){
+        const int* mask_t = &mask.data[nksp_pts*t];
+        samples[t] = find_samples_1frame(mask_t, mask.dims);
+    }
+    return samples;
+}
+
+
 
     
 void debug_print_arr(const int level, const long N, const double *arr){

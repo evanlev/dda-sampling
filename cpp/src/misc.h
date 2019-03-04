@@ -1,8 +1,7 @@
 #ifndef MISC_H
 #define MISC_H 1
 
-#define PE_DIMS 2 // number of phase encode dimensions
-
+#include "mdarray.h"
 #include "multind.h"
 #include <stdarg.h>
 #include <stdlib.h>
@@ -14,7 +13,7 @@
 #include <vector>
 #include <assert.h>
 
-#define DIMS 16u
+//#define DIMS 16u
 
 using namespace std;
 
@@ -45,9 +44,9 @@ T sum(const long N, const T *src)
 double kthLargestDouble(const long N, const double *arr, long k);
 
 /* Sampling */
-void find_samples_1frame(long *samples, const int *mask, const long mask_dims[], const int D);
+//vector<long> find_samples_1frame(const int *mask, const long mask_dims[], const int D);
 
-void find_samples(long *samples[], long Nsamps[], const int *mask, const long mask_dims[], const int nksp_dims);
+std::vector<std::vector<long> > find_samples(const MDArray<3, int> &mask);
 
 /* Vector operations */
 void cross3(double *res, const double *x, const double *y);
