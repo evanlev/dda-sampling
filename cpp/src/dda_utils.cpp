@@ -76,7 +76,7 @@ SparseKernel sparsifyW(const MDArray<4, double> &kernel, const double T){
     for( long t1 = 0 ; t1 < nt ; t1++ ){
         for( long k = 0 ; k < ksize ; k++ ){
             long ksub[kPhaseEncodeDims];
-            ind2sub<long>(kPhaseEncodeDims, kernel.dims, ksub, k);
+            ind2sub(kPhaseEncodeDims, kernel.dims, ksub, k);
             long kt1t2r_ind = k + t1*strs[kPhaseEncodeDims] + t2*strs[kPhaseEncodeDims+1];
             if( kernel.data[kt1t2r_ind] > T ){
                 // append (k) to w_sp[t1][t2]
@@ -164,7 +164,7 @@ void approxBestCandidate(const SparseKernel &wsp,
         const Sample &snew = heap.getArr(0);
         
         vector<long> kt_new_sub(kPhaseEncodeDims+1);
-        ind2sub<long>(kPhaseEncodeDims+1, wsp.dims, &kt_new_sub[0], snew.getKTIndex());
+        ind2sub(kPhaseEncodeDims+1, wsp.dims, &kt_new_sub[0], snew.getKTIndex());
         long t_new = kt_new_sub[kPhaseEncodeDims];
 
         debug_printf(DP_DEBUG4, "Sampling (%d %d)\n", 1+kt_new_sub[0], 1+kt_new_sub[1]);
@@ -181,8 +181,8 @@ void approxBestCandidate(const SparseKernel &wsp,
             for( long j = 0 ; j < wsp.len_w[t][t_new] ; j++ ){
                 // tmp = k' + (Delta k)_j
                 long tmp[kPhaseEncodeDims+1];
-                add<long>(kPhaseEncodeDims, tmp, &kt_new_sub[0], &wsp.kw[t][t_new][j*kPhaseEncodeDims]);
-                mod<long>(kPhaseEncodeDims, tmp, tmp, wsp.dims);
+                add(kPhaseEncodeDims, tmp, &kt_new_sub[0], &wsp.kw[t][t_new][j*kPhaseEncodeDims]);
+                mod(kPhaseEncodeDims, tmp, tmp, wsp.dims);
                 tmp[kPhaseEncodeDims] = t;
                 long i1 = sub2ind(kPhaseEncodeDims+1,strs,tmp);
                 heap.increaseKey(heap.getKt2idx(i1), wsp.w[t][t_new][j]);
@@ -192,8 +192,8 @@ void approxBestCandidate(const SparseKernel &wsp,
             for( long j = 0 ; j < wsp.len_w[t_new][t] ; j++ ){
                 // tmp = k' - (Delta k)_j
                 long tmp[kPhaseEncodeDims+1];
-                sub<long>(kPhaseEncodeDims, tmp, &kt_new_sub[0], &wsp.kw[t_new][t][j*kPhaseEncodeDims]);
-                mod<long>(kPhaseEncodeDims, tmp, tmp, wsp.dims);
+                sub(kPhaseEncodeDims, tmp, &kt_new_sub[0], &wsp.kw[t_new][t][j*kPhaseEncodeDims]);
+                mod(kPhaseEncodeDims, tmp, tmp, wsp.dims);
                 tmp[kPhaseEncodeDims] = t;
                 long i1 = sub2ind(kPhaseEncodeDims+1,strs,tmp);
                 // deltaJ[k' + (Delta k)_j] += w[t'][t][j]
@@ -401,8 +401,8 @@ MDArray<3, double> computeDeltaJ(const MDArray<4, double> &kernel, const MDArray
                 kernel.data[sub2ind(kPhaseEncodeDims+2, kernel.strs, diff)];
 
             // diff = (si - kt_new_sub, t, t_new);
-            sub<long>(kPhaseEncodeDims, diff, kt_sample_sub, kt_new_sub);
-            mod<long>(kPhaseEncodeDims, diff, diff, mask.dims);
+            sub(kPhaseEncodeDims, diff, kt_sample_sub, kt_new_sub);
+            mod(kPhaseEncodeDims, diff, diff, mask.dims);
             diff[kPhaseEncodeDims+0] = kt_sample_sub[kPhaseEncodeDims];
             diff[kPhaseEncodeDims+1] = kt_new_sub[kPhaseEncodeDims];
 
@@ -441,8 +441,8 @@ MDArray<4, double> computeDiffDist(const MDArray<3, int> &mask){
         ind2sub(kPhaseEncodeDims + 1u, mask.dims, si, i);
         ind2sub(kPhaseEncodeDims + 1u, mask.dims, sj, j);
 
-        sub<long>(kPhaseEncodeDims, diff, si, sj);
-        mod<long>(kPhaseEncodeDims, diff, diff, p.dims);
+        sub(kPhaseEncodeDims, diff, si, sj);
+        mod(kPhaseEncodeDims, diff, diff, p.dims);
         diff[kPhaseEncodeDims+0] = si[kPhaseEncodeDims];
         diff[kPhaseEncodeDims+1] = sj[kPhaseEncodeDims];
 #ifdef DEBUG

@@ -51,7 +51,12 @@ For cpp version, cmake and boost are required. On macOS, run "brew install boost
 ### 2.2. Setup
 
 ##### cpp/
-t can compile on Ubuntu 14.04 with g++ 4.8.5
+To compile the C++ version with CMake, run
+$ cd cpp
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
 
 ##### BART/
 
