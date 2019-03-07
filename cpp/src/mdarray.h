@@ -41,14 +41,14 @@ class MDArray
 
     // Constructor
     MDArray(){
-        data = nullptr;
+        data = NULL;
     }
     MDArray(const long _dims[]){
         init(_dims);
     }
 
     // Read weighting w. First 4 doubles are size, remaining are the values
-    MDArray<kDims, T>(const std::string &fname){
+    MDArray(const std::string &fname){
         debug_printf(DP_DEBUG3, "Reading %s...\n", fname.c_str());
         int i = 0;
         using namespace std;
@@ -214,7 +214,7 @@ class MDArray
     
 };
 
-template <uint32_t Dims, typename T>
+template <unsigned int Dims, typename T>
 std::ostream& operator<<(std::ostream &os, const MDArray<Dims, T> & dt){
     os << dt.toString();
     return os;

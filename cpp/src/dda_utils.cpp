@@ -18,7 +18,6 @@ using std::vector;
             
 const static double Inf = std::numeric_limits<double>::max();
 
-
 void SparseKernel::Print() const {
     debug_printf(DP_INFO, "sparse w: \n");
     int nt = dims[kPhaseEncodeDims];
@@ -34,7 +33,8 @@ void SparseKernel::Print() const {
 }
 
 SparseKernel sparsifyWToK(const MDArray<4, double> &kernel, const long k){
-    double T = kthLargestDouble(kernel.length(), kernel.data, k);
+    std::vector<double> data(kernel.data, kernel.data + kernel.length());
+    double T = kthLargest(data, k);
     return sparsifyW(kernel, T);
 }
 
@@ -230,14 +230,18 @@ void approxBestCandidate(const SparseKernel &wsp,
 }
 
 // Functor to get the minimum element of an array breaking ties randomly. This does bias toward choosing elements
-static long GetArgmin(const MDArray<3, double> &array) {
-    assert(array.length() > 0);
+struct GetArgmin{
 
-    std::vector<long> perm(array.length());
-    for( long i = 0 ; i < array.length() ; i++ )
-        perm[i] = i;
+  std::vector<long> perm;
+
+  GetArgmin(const int N){
+    for( long i = 0 ; i < N ; i++ )
+        perm.push_back(i);
     std::random_shuffle(perm.begin(), perm.end());
+  }
 
+  double operator () (const MDArray<3, double> &array) const {
+    assert(array.length() > 0);
     long argmin = 0;
     double min = array[argmin];
     for( long j = 0 ; j < array.length() ; j++ ){
@@ -249,7 +253,8 @@ static long GetArgmin(const MDArray<3, double> &array) {
         }
     }
     return argmin;
-}
+  }
+};
 
 /*
  * Best candidate sampling
@@ -298,10 +303,12 @@ void exactBestCandidate(const MDArray<4, double> &kernel,
             n_full++;
     }
 
+    GetArgmin argmin(deltaJ.length());
+
     // Best candidate selection loop
     for( long i = 0 ; i < totSamps ; i++ ){
         // k_new = argmin deltaJ(k,t) 
-        long kt_new_ind = GetArgmin(deltaJ);
+        long kt_new_ind = argmin(deltaJ);
         long kt_new_sub[kPhaseEncodeDims+1];
         ind2sub(kPhaseEncodeDims+1, mask.dims, kt_new_sub, kt_new_ind);
         long t_new = kt_new_sub[kPhaseEncodeDims];

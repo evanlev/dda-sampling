@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.4)
-
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+     
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
 project(sampling)
 
@@ -18,40 +19,11 @@ set(HEADERS
 
 file( GLOB SOURCES src/*.cpp )
 
-#set(SOURCES
-#    src/dda_utils.cpp
-#    src/sampleHeap.cpp
-#    src/sample.cpp
-#    src/misc.cpp
-#    src/multind.cpp
-#    src/debug.cpp
-#)
-
 add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-#include_directories(
-
-#target_public_includes(${PROJECT_NAME}
-#    HEADERS
-#        ${HEADERS}
-#    DONT_STRIP
-#    PREFIX bcfast
-#)
-#set(Boost_USE_STATIC_LIBS OFF) 
-#set(Boost_USE_MULTITHREADED ON)  
-#set(Boost_USE_STATIC_RUNTIME OFF) 
-#find_package(Boost 1.59.0 COMPONENTS programoptions) 
 find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
 
-#find_package( Boost 1.45.0 COMPONENTS program_options REQUIRED )
-
-#include_directories(include)
 include_directories("${CMAKE_SOURCE_DIR}/src" ${Boost_INCLUDE_DIRS} )
-
-#include_directories(${Boost_INCLUDE_DIRS}) 
-#include_directories(src)
-
-
 
 #file( GLOB APP_SOURCES src/*.cxx )
 #file( GLOB APP_SOURCES *.cxx )
@@ -72,11 +44,3 @@ target_link_libraries( testHeap ${PROJECT_NAME} ${SOURCES} ${Boost_LIBRARIES} )
 
 add_executable( testGenerator testGenerator.cpp )
 target_link_libraries( testGenerator ${PROJECT_NAME} ${SOURCES} ${Boost_LIBRARIES} )
-
-#target_link_libraries( bcfast ${PROJECT_NAME} ${SOURCES} )
-
-
-#add_executable(getDeltaJ.cpp DEPS ${PROJECT_NAME} TEST)
-    
-
-

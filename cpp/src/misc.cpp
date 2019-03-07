@@ -21,12 +21,6 @@ void debug_print_arr(const int level, const long N, const double *arr){
     debug_printf(level, "]\n");
 }
 
-// ------ k-th largest
-// k-th largest element, k = 0 means largest element
-double kthLargestDouble(const long N, const double *arr, long k){
-    return kthLargest<double>(N, arr, k);
-}
-
 /*
  * ----- Vector operations
  */
@@ -152,6 +146,7 @@ void* xcalloc(size_t s)
 }
 
 
+/*
 // swap two non-overlapping blocks of memory of size s
 void swap(void *p1, void *p2, size_t s){
     void *p3 = (void *) ::operator new(s);
@@ -160,6 +155,7 @@ void swap(void *p1, void *p2, size_t s){
     memcpy(p1, p3, s); // p1 = p3
     operator delete(p3);
 }
+*/
 
 /*
  * Draw uniformly at random new_s in the range [0, dims-1]

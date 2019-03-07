@@ -5,7 +5,6 @@
 #include "misc.h"
 #include "config.h"
 
-#define MAX_DIMS (kPhaseEncodeDims + 2u)
 #define MAX_T 100
 
 // TODO clean up

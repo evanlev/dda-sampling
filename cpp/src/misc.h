@@ -171,8 +171,6 @@ void md_clear( const int D, void *p, const long *p_dims, size_t size);
 
 int cmpfunc_double (const void * a, const void * b);
 
-void swap(void *p1, void *p2, size_t s);
-
 int compareToDouble(const double a, const double b);
 
 /* Randomization */

@@ -6,54 +6,26 @@
 #include <iostream>
 #include <numeric>      // std::accumulate
 #include <functional>
+#include <algorithm>
 
 // k-th largest but destroy input array
 template<typename T>
-T kthLargest2(const long N, T *arr, long k){
-    assert( k < N );
-    if( k == 0 && N == 1 ){
-        return arr[0];
-    }
-    long left = 0;
-    long right = N-1;
-    long pivot = (right + left)/2;
-    T pivotValue = arr[pivot];
+T kthLargest2(std::vector<T> &arr, long k){
+    assert(k <  arr.size());
+    assert(k >= 0);
 
-    while( left <= right ){
-        while( arr[left] < pivotValue ){
-            left++;
-        }
-        while( arr[right] > pivotValue ){
-            right--;
-        }
-        if( left <= right ){
-            swap(&arr[left], &arr[right], sizeof(T));
-            left++;
-            right--;
-        }
-    }
-    if( k < N - left ){
-        return kthLargest2<T>(N - left, &arr[left], k);
-    }else{
-        return kthLargest2<T>(left, arr, k - N + left);
-    }
+    std::nth_element(arr.begin(), arr.begin() + arr.size() - k, arr.end());
+
+    return arr[arr.size() - k];
 }
 
 // k-th largest element, k = 0 means largest element
 template <typename T>
-T kthLargest(const long N, const T *arr, long k){
-    if( k >= N || k < 0 ){
-        std::cout << "k: " << k << ", N: " << N << std::endl;
-    }
-    assert(k <  N);
-    assert(k >= 0);
+T kthLargest(const std::vector<T> &arr, long k){
 
-    T *tmp = new T[N];
-    memcpy(tmp, arr, N*sizeof(T));
+    std::vector<T> tmp = arr;
 
-    return kthLargest2<T>(N, tmp, k);
-
-    delete [] tmp;
+    return kthLargest2<T>(tmp, k);
 }
 
 template<typename T>
