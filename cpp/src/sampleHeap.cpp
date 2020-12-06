@@ -1,7 +1,8 @@
+#include "sampleHeap.h"
+
 #include "debug.h"
 #include "misc.h"
 #include "misc.hpp"
-#include "sampleHeap.h"
 #include "sample.h"
 
 #include <algorithm>    // std::random_shuffle

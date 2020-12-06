@@ -8,7 +8,8 @@
 #define MAX_T 100
 
 // TODO clean up
-struct SparseKernel {
+struct SparseKernel
+{
     long *kw[MAX_T][MAX_T];
     long D;
     long dims[kPhaseEncodeDims + 2u];

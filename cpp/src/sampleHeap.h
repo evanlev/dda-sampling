@@ -1,5 +1,5 @@
 #ifndef SAMPLEHEAP_H
-#define SAMPLEHEAP_H
+#define SAMPLEHEAP_H 1
 
 #include "sample.h"
 #include "mdarray.h"

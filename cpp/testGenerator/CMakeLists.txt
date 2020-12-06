@@ -1,9 +1,6 @@
-project(testGenerator)
-cmake_minimum_required(VERSION 3.1)
+add_executable (testgenerator testgenerator.cpp)
 
 find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
-include_directories("${CMAKE_SOURCE_DIR}/src" ${Boost_INCLUDE_DIRS} )
+include_directories(${Boost_INCLUDE_DIRS})
+target_link_libraries (testgenerator LINK_PUBLIC common ${Boost_LIBRARIES})
 
-
-add_executable(${PROJECT_NAME} testGenerator.cpp)
-target_link_libraries(${PROJECT_NAME} common ${Boost_LIBRARIES})
