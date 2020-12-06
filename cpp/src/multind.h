@@ -1,5 +1,8 @@
+#ifndef MULTIND_H
+#define MULTIND_H 1
 
 #include <string.h>
+#include <array>
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -51,4 +54,11 @@ void* xmalloc(size_t s);
 
 #define MD_INIT_ARRAY(x, y) { [ 0 ... ((x) - 1) ] = (y) } 
 
+// C++ Wrappers
+template <size_t D>
+long md_calc_size(const std::array<long, D>& dims)
+{
+	return md_calc_size(D, dims.data());
+}
 
+#endif // MULTIND_H

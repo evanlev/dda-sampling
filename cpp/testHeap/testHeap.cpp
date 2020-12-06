@@ -18,36 +18,39 @@
 
 using namespace std;
 
-static bool CheckHeap(const SampleHeap &heap) {
+static bool CheckHeap(const SampleHeap &heap)
+{
     // Check heap kt2idx array
-    for( unsigned long kt_ind = 0 ; kt_ind < heap.Size() ; kt_ind++ ){
-        if(heap.getKt2idx(kt_ind) != -1 && heap.getArr(heap.getKt2idx(kt_ind)).getKTIndex() != kt_ind){
-            debug_printf(DP_ERROR, "kt_ind: %lu, kt: %ld, size: %ld\n", kt_ind, 
-                heap.getArr(heap.getKt2idx(kt_ind)).getKTIndex(), heap.Size());
+    for (unsigned long kt_ind = 0; kt_ind < heap.Size(); kt_ind++)
+    {
+        if (heap.getKt2idx(kt_ind) != -1 && heap.getArr(heap.getKt2idx(kt_ind)).getKTIndex() != kt_ind)
+        {
+            debug_printf(DP_ERROR, "kt_ind: %lu, kt: %ld, size: %ld\n", kt_ind,
+                         heap.getArr(heap.getKt2idx(kt_ind)).getKTIndex(), heap.Size());
             return false;
         }
     }
     return true;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
     // Dimensions
-    const long pat_dims[kPhaseEncodeDims + 1] = {7, 9, 2};
-    const long N = md_calc_size(kPhaseEncodeDims + 1, pat_dims);
-
-    //debug_level = DP_ALL;
+    const std::array<long, kPhaseEncodeDims + 1> pat_dims = {7, 9, 2};
+    const long N = md_calc_size(pat_dims);
 
     // Random cost
     MDArray<3, double> deltaJ(pat_dims);
-    for( int i = 0 ; i < N ; i++ ){
+    for (int i = 0; i < deltaJ.Length(); i++)
+    {
         deltaJ[i] = static_cast<double>(rand() % 1000);
     }
 
     SampleHeap heap(deltaJ);
-    
+
     // Check the inverse index
-    for( int i = 0 ; i < 500 ; i++ ){
+    for (int i = 0; i < 500; i++)
+    {
         assert(CheckHeap(heap));
         int idx = rand() % N;
         heap.increaseKey(idx, rand() % 100);
@@ -55,7 +58,8 @@ int main( int argc, char* argv[] )
 
     // Check that popping the samples returns them in sorted order and maintains the inverse index
     vector<double> costs;
-    while( heap.Size() > 0 ){
+    while (heap.Size() > 0)
+    {
         costs.push_back(heap.pop().dJ);
         assert(CheckHeap(heap));
     }
@@ -66,4 +70,3 @@ int main( int argc, char* argv[] )
 
     return 0;
 }
-

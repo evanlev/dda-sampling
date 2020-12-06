@@ -23,87 +23,90 @@
 
 namespace po = boost::program_options;
 
-using namespace std;
+namespace
+{
+    /* Write pattern. First line contains dims, each line contains a linear index of a sample location
+    *
+    * filename = file name
+    * D        = number of dims in pat_dims
+    * pat_dims = dimensions, {yres, zres, #frames}
+    * pat      = pattern data
+    */
+    template <size_t D>
+    void writePat(const std::string& filename, const std::array<long, D>& pat_dims, int *pat)
+    {
+        //debug_printf(DP_INFO, "Writing pattern...\n");
+        long N = md_calc_size(pat_dims);
+        FILE *pFile = fopen(filename.c_str(), "w");
 
-/* Write pattern. First line contains dims, each line contains a linear index of a sample location
- *
- * filename = file name
- * D        = number of dims in pat_dims
- * pat_dims = dimensions, {yres, zres, #frames}
- * pat      = pattern data
-*/
-void writePat(const string filename, const long D, const long pat_dims[], const int *pat){
-    //debug_printf(DP_INFO, "Writing pattern...\n");
-    long N = md_calc_size(D, pat_dims);
-    FILE * pFile = fopen(filename.c_str(), "w");
-            
-    for( int i = 0 ; i < D ; i++ ){
-        fprintf(pFile, "%ld ", pat_dims[i]);
-    }
-    fprintf(pFile, "\n");
-
-    for( int i = 0 ; i < N ; i++ ){
-        for( int j = 0 ; j < pat[i] ; j++ ){
-            fprintf(pFile, "%d\n", i);
+        for (int i = 0; i < D; i++)
+        {
+            fprintf(pFile, "%ld ", pat_dims[i]);
         }
+        fprintf(pFile, "\n");
+
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < pat[i]; j++)
+            {
+                fprintf(pFile, "%d\n", i);
+            }
+        }
+        fclose(pFile);
     }
-    fclose(pFile);
 }
 
 /*
  * Use boost to process command line arguments
  */
-static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &max_samples_per_frame, int &totSamps, int &exact, string &kernel_file, string &patfile){
-    try{
+static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &max_samples_per_frame, int &totSamps, int &exact, string &kernel_file, string &patfile)
+{
+    try
+    {
         //po::options_description desc("Allowed options");
         po::options_description desc("Options");
-        desc.add_options()
-            ("help", "produce help message")
-            ("max-per-frame", po::value<int>(&max_samples_per_frame), "set max samples per phase")
-            ("T", po::value<double>(&T), "hard threshold for w")
-            ("K", po::value<int>(&K), "set support of thresholded w")
-            ("S", po::value<int>(&totSamps), "total samples")
-            ("e", po::value<int>(&exact), "exact best candidate")
-            ("w", po::value<string>(&kernel_file), "weighting file")
-            ("pat", po::value<string>(&patfile), "pattern file")
-        ;
+        desc.add_options()("help", "produce help message")("max-per-frame", po::value<int>(&max_samples_per_frame), "set max samples per phase")("T", po::value<double>(&T), "hard threshold for w")("K", po::value<int>(&K), "set support of thresholded w")("S", po::value<int>(&totSamps), "total samples")("e", po::value<int>(&exact), "exact best candidate")("w", po::value<string>(&kernel_file), "weighting file")("pat", po::value<string>(&patfile), "pattern file");
 
-        po::variables_map vm;        
+        po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
-        po::notify(vm);    
+        po::notify(vm);
 
         // S = total samples
-        if ( !vm.count("S") || !vm.count("w") || !vm.count("pat") ) {
+        if (!vm.count("S") || !vm.count("w") || !vm.count("pat"))
+        {
             cout << desc << "\n";
             return false;
         }
         // default max samples per phase
-        if( !vm.count("max-per-frame") ){
+        if (!vm.count("max-per-frame"))
+        {
             max_samples_per_frame = totSamps;
         }
 
     } // end try
-    catch(std::exception& e)
+    catch (std::exception &e)
     {
         std::cerr << "Error: " << e.what() << "\n";
         return false;
     }
-    catch(...)
+    catch (...)
     {
-        std::cerr << "Unknown error!" << "\n";
+        std::cerr << "Unknown error!"
+                  << "\n";
         return false;
     }
 
     return true;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
     // Process arguments
     double T = 0;
     int exact, max_samples_per_frame, totSamps, K = 0;
-    string kernel_file, patfile;
-    if( !processCommandLine(argc, argv, T, K, max_samples_per_frame, totSamps, exact, kernel_file, patfile) ){
+    std::string kernel_file, patfile;
+    if (!processCommandLine(argc, argv, T, K, max_samples_per_frame, totSamps, exact, kernel_file, patfile))
+    {
         return 0;
     }
 
@@ -111,12 +114,12 @@ int main( int argc, char* argv[] )
     MDArray<4, double> kernel(kernel_file);
 
     // Output dims
-    const long nframes = kernel.dims[kPhaseEncodeDims];
-    long pat_dims[4];
-    md_select_dims(4, 7u, pat_dims, kernel.dims);
-    long N = md_calc_size(3, pat_dims);
+    const long numFrames = kernel.Dims()[kPhaseEncodeDims];
+    std::array<long, kPhaseEncodeDims + 1> pat_dims;
+    md_select_dims(4, 7u, pat_dims.data(), kernel.Dims().data()); // 111
+    long N = md_calc_size(3, pat_dims.data());
 
-    vector<long> max_samples_per_frame_array(nframes, max_samples_per_frame);
+    std::vector<long> maxSamplesPerFrame(numFrames, max_samples_per_frame);
 
     //cout << kernel.toString() << endl;
 #if 0
@@ -128,36 +131,34 @@ int main( int argc, char* argv[] )
     //  Build sparse w
     debug_level = DP_ALL;
 
-    SparseKernel sparse_kernel;
-    if( !exact ){
-        debug_printf(DP_DEBUG3, "building sparse w, K = %d\n", K);
-        if( K ){
-            sparse_kernel = sparsifyWToK(kernel, K);
-        }else{
-            sparse_kernel = sparsifyW(kernel, T);
-        }
+    if (K)
+    {
+        T = kernel.kthLargest(K);
     }
-    sparse_kernel.Print();
 
     // Generate pat
     double cost;
-    MDArray<3, int> pat(pat_dims);
+    MDArray<kPhaseEncodeDims + 1, int> pat(pat_dims);
     pat.Clear();
-    MDArray<3, double> deltaJ(pat_dims);
+    MDArray<kPhaseEncodeDims + 1, double> deltaJ(pat_dims);
 
-    if( exact ){
+    if (exact)
+    {
         // Exact version, slower
-        exactBestCandidate(kernel, max_samples_per_frame_array, totSamps, pat, cost, deltaJ);
-    }else{
+        exactBestCandidate(kernel, maxSamplesPerFrame, totSamps, pat, cost, deltaJ);
+    }
+    else
+    {
         // Faster version using a heap. Faster if w is sparse enough
-        approxBestCandidate(sparse_kernel, max_samples_per_frame_array, totSamps, pat, cost);
+        SparseKernel sparseKernel(kernel, T);
+        sparseKernel.Print();
+        approxBestCandidate(sparseKernel, maxSamplesPerFrame, totSamps, pat, cost);
     }
 
     // Write out pattern
     debug_printf(DP_INFO, "Writing pattern\n");
-    writePat(patfile, 3, pat_dims, pat.data);
+    writePat(patfile, pat_dims, pat.m_data.data());
     debug_printf(DP_INFO, "Done writing pattern\n");
 
     return 0;
 }
-

@@ -157,7 +157,6 @@ long md_calc_size(unsigned int D, const long dim[])
 }
 
 
-
 /**
  * Computes the number of smallest dimensions which are stored
  * contineously, i.e. can be accessed as a block of memory.
@@ -397,12 +396,30 @@ void md_calc_strides(unsigned int D, long str[], const long dim[], size_t size)
 {
 	long old = size;
 
-	for (unsigned int i = 0; i < D; i++) {
-
+	for (unsigned int i = 0; i < D; i++)
+	{
 		str[i] = (1 == dim[i]) ? 0 : old;
 		old *= dim[i];
 	}
 }
+
+/*
+template <typename T>
+std::vector<T> md_calc_strides(const std::vector<T> &dims)
+{
+	// Calculate strides
+	vector<long> strs(dims.size());
+	// md_calc_strides(dims.size(), strs.data(), dims.data(), );
+
+	long old = 1;
+	for (unsigned int i = 0; i < dims.size(); i++)
+	{
+		strs[i] = (1 == dims[i]) ? 0 : old;
+		old *= dims[i];
+	}
+	return strs;
+}
+*/
 
 /**
  * Zero out array (without strides)

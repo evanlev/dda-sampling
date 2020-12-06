@@ -39,11 +39,6 @@ void logerror(const char *fmt, ... )
     va_end(ap);
 }
 
-/*
- *
- * From BART 
- */
-
 static const char* level_strings[] = {
     "DP_ERROR",
     "DP_WARN",

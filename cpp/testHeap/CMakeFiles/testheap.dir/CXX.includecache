@@ -49,6 +49,8 @@ misc.h
 src/misc.h
 config.h
 src/config.h
+array
+-
 
 src/debug.h
 assert.h
@@ -57,11 +59,15 @@ stdarg.h
 -
 
 src/mdarray.h
+algorithm
+-
 string
 -
 iostream
 -
 fstream
+-
+memory
 -
 sstream
 -
@@ -97,6 +103,8 @@ assert.h
 src/misc.hpp
 misc.h
 src/misc.h
+array
+-
 assert.h
 -
 iostream
@@ -111,6 +119,8 @@ algorithm
 src/multind.h
 string.h
 -
+array
+-
 stdbool.h
 -
 stdlib.h
@@ -119,6 +129,8 @@ stdlib.h
 src/sample.h
 
 src/sampleHeap.h
+config.h
+src/config.h
 sample.h
 src/sample.h
 mdarray.h

@@ -1,11 +1,10 @@
 #ifndef SAMPLEHEAP_H
 #define SAMPLEHEAP_H 1
 
+#include "config.h"
 #include "sample.h"
 #include "mdarray.h"
 #include <vector>
-
-using std::vector;
 
 // Heap class allowing increasing arbitrary elements. This is a min heap
 class SampleHeap {
@@ -15,7 +14,7 @@ class SampleHeap {
         inline void copyTo(const int nodeIndex, const Sample &data);
 
     public:
-        SampleHeap(const MDArray<3, double> &deltaJ);
+        SampleHeap(const MDArray<kPhaseEncodeDims + 1, double> &deltaJ);
 
         unsigned long Size() const {
             return static_cast<unsigned long>(arr.size());

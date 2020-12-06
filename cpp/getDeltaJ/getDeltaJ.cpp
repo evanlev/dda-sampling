@@ -35,7 +35,8 @@ static bool processCommandLine(int argc, char *argv[], string &wfile, string &pa
         po::notify(vm);    
 
         // S = total samples
-        if ( !vm.count("w") || !vm.count("pat") || !vm.count("dJ") ) {
+        if (!vm.count("w") || !vm.count("pat") || !vm.count("dJ"))
+        {
             cout << desc << "\n";
             return false;
         }
@@ -54,11 +55,12 @@ static bool processCommandLine(int argc, char *argv[], string &wfile, string &pa
     return true;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
     // Process arguments
     string wfile, mask_file, deltaJ_file;
-    if( !processCommandLine(argc, argv, wfile, mask_file, deltaJ_file) ){
+    if (!processCommandLine(argc, argv, wfile, mask_file, deltaJ_file))
+    {
         return 0;
     }
 
@@ -73,8 +75,6 @@ int main( int argc, char* argv[] )
 
     // Write output file
     deltaJ.Write(deltaJ_file);
-    
+
     return 0;
 }
-
-

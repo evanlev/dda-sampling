@@ -41,11 +41,7 @@ T sum(const long N, const T *src)
     return res;
 }
 
-double kthLargestDouble(const long N, const double *arr, long k);
-
-/* Sampling */
-//vector<long> find_samples_1frame(const int *mask, const long mask_dims[], const int D);
-
+/* Sampling */  
 std::vector<std::vector<long> > find_samples(const MDArray<3, int> &mask);
 
 /* Vector operations */

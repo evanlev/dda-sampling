@@ -10,10 +10,6 @@ extern "C" {
 
 #include <stdarg.h>     /* va_list, va_start, va_arg, va_end */
 
-
-/*
-*/
-
 extern int debug_level;
 extern bool debug_logging;
 
