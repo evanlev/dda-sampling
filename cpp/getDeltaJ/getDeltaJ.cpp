@@ -11,7 +11,7 @@
 #include "misc.h"
 #include "multind.h"
 
-using namespace std;
+using std::string;
 
 namespace po = boost::program_options;
 
@@ -20,7 +20,6 @@ namespace po = boost::program_options;
  */
 static bool processCommandLine(int argc, char *argv[], string &wfile, string &patfile, string &deltaJfile){
     try{
-        //po::options_description desc("Allowed options");
         po::options_description desc("Options");
         desc.add_options()
             ("help", "produce help message")
