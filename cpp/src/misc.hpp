@@ -29,8 +29,7 @@ T kthLargest(const std::vector<T> &arr, long k)
 }
 
 template<typename T>
-long
-sub2ind(const unsigned int D, const vector<long> &strides, const vector<T> &sub){
+long sub2ind(const unsigned int D, const long *strides, const T *sub){
     long res = 0;
     for( unsigned int i = 0 ; i < D ; i++ ){
         res += sub[i]*strides[i];
@@ -38,15 +37,16 @@ sub2ind(const unsigned int D, const vector<long> &strides, const vector<T> &sub)
     return res;
 }
 
+template<typename T, size_t D>
+long sub2ind(const std::array<T, D> &strides, const T* sub)
+{
+    return sub2ind(D, strides.data(), sub);
+}
 
-template<typename T>
-long
-sub2ind(const unsigned int D, const long *strides, const T *sub){
-    long res = 0;
-    for( unsigned int i = 0 ; i < D ; i++ ){
-        res += sub[i]*strides[i];
-    }
-    return res;
+template<size_t D>
+long sub2ind(const std::array<long, D> &strides, const std::array<long, D>& sub)
+{
+    return sub2ind(D, strides.data(), sub.data());
 }
 
 /* convert linear index to MD subscript */

@@ -6,33 +6,28 @@
 #include "mdarray.h"
 #include <vector>
 
-// Heap class allowing increasing arbitrary elements. This is a min heap
+// Heap class allowing increasing arbitrary elements. This is a min-heap.
 class SampleHeap {
     private:
         std::vector<Sample> arr;
         std::vector<int> kt2idx; // inverse index: kt2idx[kt] = index in array containing element at k-space index kt
-        inline void copyTo(const int nodeIndex, const Sample &data);
+        void copyTo(const int nodeIndex, const Sample &data);
 
     public:
         SampleHeap(const MDArray<kPhaseEncodeDims + 1, double> &deltaJ);
 
-        unsigned long Size() const {
+        unsigned long Size() const
+        {
             return static_cast<unsigned long>(arr.size());
         }
 
-        int getKt2idx(const int nodeIndex) const ;
+        int getKt2idx(const int nodeIndex) const;
 
-        static inline int getParentIndex(int nodeIndex);
+        void swapSamples(int i1, int i2);
 
-        static inline int getRightChildIndex(int nodeIndex);
+        void percolateDown(int nodeIndex);
 
-        static inline int getLeftChildIndex(int nodeIndex);
-
-        inline void swapSamples(int i1, int i2);
-
-        inline void percolateDown(int nodeIndex);
-
-        inline void percolateUp(int nodeIndex);
+        void percolateUp(int nodeIndex);
 
         void increaseKey(int nodeIndex, double delta);
 

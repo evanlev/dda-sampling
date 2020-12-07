@@ -379,10 +379,6 @@ void md_clear2(unsigned int D, const long dim[], const long str[], void* ptr, si
 	//md_nary(1, D - skip, dim + skip, (const long*[1]){ str + skip }, (void*[1]){ ptr }, (void*)&data, &nary_clear);
 }
 
-
-
-
-
 /**
  * Calculate strides in column-major format 
  * (smallest index is sequential)
@@ -402,24 +398,6 @@ void md_calc_strides(unsigned int D, long str[], const long dim[], size_t size)
 		old *= dim[i];
 	}
 }
-
-/*
-template <typename T>
-std::vector<T> md_calc_strides(const std::vector<T> &dims)
-{
-	// Calculate strides
-	vector<long> strs(dims.size());
-	// md_calc_strides(dims.size(), strs.data(), dims.data(), );
-
-	long old = 1;
-	for (unsigned int i = 0; i < dims.size(); i++)
-	{
-		strs[i] = (1 == dims[i]) ? 0 : old;
-		old *= dims[i];
-	}
-	return strs;
-}
-*/
 
 /**
  * Zero out array (without strides)

@@ -59,13 +59,20 @@ namespace
 /*
  * Use boost to process command line arguments
  */
-static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &max_samples_per_frame, int &totSamps, int &exact, string &kernel_file, string &patfile)
+static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &maxSamplesPerFrame, int &totalSamples, int &exact, string &kernel_file, string &patfile)
 {
     try
     {
         //po::options_description desc("Allowed options");
         po::options_description desc("Options");
-        desc.add_options()("help", "produce help message")("max-per-frame", po::value<int>(&max_samples_per_frame), "set max samples per phase")("T", po::value<double>(&T), "hard threshold for w")("K", po::value<int>(&K), "set support of thresholded w")("S", po::value<int>(&totSamps), "total samples")("e", po::value<int>(&exact), "exact best candidate")("w", po::value<string>(&kernel_file), "weighting file")("pat", po::value<string>(&patfile), "pattern file");
+        desc.add_options()("help", "produce help message")
+            ("max-per-frame", po::value<int>(&maxSamplesPerFrame), "set max samples per phase")
+            ("T", po::value<double>(&T), "hard threshold for w")
+            ("K", po::value<int>(&K), "set support of thresholded w")
+            ("S", po::value<int>(&totalSamples), "total samples")
+            ("e", po::value<int>(&exact), "exact best candidate")
+            ("w", po::value<string>(&kernel_file), "weighting file")
+            ("pat", po::value<string>(&patfile), "pattern file");
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -80,7 +87,7 @@ static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &m
         // default max samples per phase
         if (!vm.count("max-per-frame"))
         {
-            max_samples_per_frame = totSamps;
+            maxSamplesPerFrame = totalSamples;
         }
 
     } // end try
@@ -103,15 +110,15 @@ int main(int argc, char *argv[])
 {
     // Process arguments
     double T = 0;
-    int exact, max_samples_per_frame, totSamps, K = 0;
+    int useExact, maxSamplesPerFrame, totalSamples, K = 0;
     std::string kernel_file, patfile;
-    if (!processCommandLine(argc, argv, T, K, max_samples_per_frame, totSamps, exact, kernel_file, patfile))
+    if (!processCommandLine(argc, argv, T, K, maxSamplesPerFrame, totalSamples, useExact, kernel_file, patfile))
     {
         return 0;
     }
 
     // Read in the kernel w from kernel_file
-    MDArray<4, double> kernel(kernel_file);
+    MDArray<kPhaseEncodeDims + 2, double> kernel(kernel_file);
 
     // Output dims
     const long numFrames = kernel.Dims()[kPhaseEncodeDims];
@@ -119,18 +126,9 @@ int main(int argc, char *argv[])
     md_select_dims(4, 7u, pat_dims.data(), kernel.Dims().data()); // 111
     long N = md_calc_size(3, pat_dims.data());
 
-    std::vector<long> maxSamplesPerFrame(numFrames, max_samples_per_frame);
-
-    //cout << kernel.toString() << endl;
-#if 0
-    for( long i = 0 ; i < kernel.len ; ++i ){
-        debug_printf(DP_INFO, "w[%d] = %f\n", i, kernel.data[i]);
-    }
-#endif
+    const std::vector<long> maxSamplesPerFrameVector(numFrames, maxSamplesPerFrame);
 
     //  Build sparse w
-    debug_level = DP_ALL;
-
     if (K)
     {
         T = kernel.kthLargest(K);
@@ -142,22 +140,22 @@ int main(int argc, char *argv[])
     pat.Clear();
     MDArray<kPhaseEncodeDims + 1, double> deltaJ(pat_dims);
 
-    if (exact)
+    if (useExact)
     {
         // Exact version, slower
-        exactBestCandidate(kernel, maxSamplesPerFrame, totSamps, pat, cost, deltaJ);
+        SampleExactBestCandidate<kPhaseEncodeDims>(kernel, maxSamplesPerFrameVector, totalSamples, pat, cost, deltaJ);
     }
     else
     {
         // Faster version using a heap. Faster if w is sparse enough
         SparseKernel sparseKernel(kernel, T);
         sparseKernel.Print();
-        approxBestCandidate(sparseKernel, maxSamplesPerFrame, totSamps, pat, cost);
+        SampleApproxBestCandidate<kPhaseEncodeDims>(sparseKernel, maxSamplesPerFrameVector, totalSamples, pat, cost);
     }
 
     // Write out pattern
     debug_printf(DP_INFO, "Writing pattern\n");
-    writePat(patfile, pat_dims, pat.m_data.data());
+    writePat(patfile, pat_dims, pat.Data());
     debug_printf(DP_INFO, "Done writing pattern\n");
 
     return 0;

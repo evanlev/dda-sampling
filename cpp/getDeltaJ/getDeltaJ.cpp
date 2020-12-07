@@ -65,13 +65,13 @@ int main(int argc, char *argv[])
     }
 
     // Read in w from wfile
-    MDArray<4, double> kernel(wfile);
+    MDArray<kPhaseEncodeDims + 2, double> kernel(wfile);
 
     // Read in pattern
-    MDArray<3, int> mask(mask_file);
+    MDArray<kPhaseEncodeDims + 1, int> mask(mask_file);
 
     // Compute Delta J
-    MDArray<3, double> deltaJ = computeDeltaJ(kernel, mask);
+    MDArray<kPhaseEncodeDims + 1, double> deltaJ = ComputeDeltaJ<kPhaseEncodeDims>(kernel, mask);
 
     // Write output file
     deltaJ.Write(deltaJ_file);

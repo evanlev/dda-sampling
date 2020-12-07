@@ -61,4 +61,12 @@ long md_calc_size(const std::array<long, D>& dims)
 	return md_calc_size(D, dims.data());
 }
 
+template <size_t D>
+std::array<long, D> md_calc_strides(const std::array<long, D>& dims, size_t size)
+{
+	std::array<long, D> str;
+	md_calc_strides(D, str.data(), dims.data(), size);
+	return str;
+}
+
 #endif // MULTIND_H

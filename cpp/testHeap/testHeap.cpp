@@ -16,8 +16,6 @@
 #include "debug.h"
 #include "sampleHeap.h"
 
-using namespace std;
-
 static bool CheckHeap(const SampleHeap &heap)
 {
     // Check heap kt2idx array
@@ -57,7 +55,8 @@ int main(int argc, char *argv[])
     }
 
     // Check that popping the samples returns them in sorted order and maintains the inverse index
-    vector<double> costs;
+    std::vector<double> costs;
+    costs.reserve(heap.Size());
     while (heap.Size() > 0)
     {
         costs.push_back(heap.pop().dJ);
