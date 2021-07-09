@@ -1,6 +1,5 @@
-//#ifndef SAMPLE_H
-//#define SAMPLE_H
-#pragma once
+#ifndef __SAMPLE_H
+#define __SAMPLE_H
 
 // Sample class    
 typedef struct sample_s{
@@ -8,7 +7,6 @@ typedef struct sample_s{
     double dJ;
 } Sample;
 
-int dJCompare(const void *s1, const void *s2);
+extern int dJCompare(const void *s1, const void *s2);
 
-//#endif
-
+#endif	// __SAMPLE_H

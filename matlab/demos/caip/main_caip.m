@@ -18,7 +18,7 @@ ny = ny + R - mod(ny, R);
 nz = nz + R - mod(nz, R);
 N = ny*nz;
 kData = zpad(kData, [nx, ny nz ncoils]);
-sns_maps = bart_0209('ecalib -m1 -c0.4', kData);
+sns_maps = bart_0700('ecalib -m1 -c0.4', kData);
 
 % Make weight vector: <W, p(deltak)> = || E'E epsilon ||_2^2, epsilon ~ N(0,I)
 w = buildW(sns_maps);
@@ -38,8 +38,8 @@ end
 npats = size(cells,3);
 
 % Reconstruction functions 
-f_coil_combine = @(X) bart_0209('pics -S -d0 -i1 -w1', X, sns_maps);
-f_sense = @(X) bart_0209('pics -S -d0 -w1', X, sns_maps);
+f_coil_combine = @(X) bart_0700('pics -S -d0 -i1 -w1', X, sns_maps);
+f_sense = @(X) bart_0700('pics -S -d0 -w1', X, sns_maps);
 
 % Noise to add 
 sigma = norm(kData(:))/numel(kData(:))*9e-2;
@@ -77,10 +77,12 @@ end
 
 % --- Save
 fname = sprintf('results/res_caip_R%d', R);
-if( ~caip_sampling )
+if ~caip_sampling
     fname = [fname, '_arb'];
 end
-save(fname, '-v7.3');
+if ~exist('OCTAVE_VERSION', 'builtin') ~= 0
+    save(fname, '-v7.3');
+end
 
 main_caip_plot;
 

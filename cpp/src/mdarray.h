@@ -35,8 +35,7 @@ public:
 
         try
         {
-            std::array<long, kDims> dims;
-            ReadHeader(fname_hdr, dims);
+            const std::array<long, kDims> dims = ReadHeader(fname_hdr);
             Resize(dims);
             ReadData(fname_dat);
         }
@@ -73,6 +72,8 @@ public:
         m_dims = dims;
         m_strs = md_calc_strides(m_dims, 1);
         m_len = md_calc_size(kDims, m_dims.data());
+        std::cout << "resizing to " << m_dims[0] << " " << m_dims[1] << " " << m_dims[2] << " " << " " << m_dims[3] << std::endl;
+        std::cout << "Lenght: " << m_len << std::endl;
         m_data.resize(m_len);
     }
 
@@ -173,24 +174,28 @@ public:
         debug_printf(DP_DEBUG1, "Done!\n");
     }
 private:
-    void ReadHeader(const std::string &fname_hdr, std::array<long, kDims> dims)
+    std::array<long, kDims> ReadHeader(const std::string &fname_hdr)
     {
         // Read header file
         std::ifstream file_hdr(fname_hdr.c_str());
+        std::array<long, kDims> dims;
+        std::fill(dims.begin(), dims.end(), 1);
         if (file_hdr.is_open())
         {
-            long sized;
+            long current_dim;
             std::vector<long> dims1;
-            while (file_hdr >> sized)
+            while (file_hdr >> current_dim)
             {
-                dims1.push_back(sized);
+                dims1.push_back(current_dim);
+                if (dims1.size() > kDims && current_dim != 1)
+                {
+                    std::cerr << "MDArray does not have enough dimensions, dim: " << current_dim << std::endl;
+                    exit(0);
+                }
             }
+
             // Read dimensions, pad with ones
-            for (unsigned int i = 0; i < kDims; i++)
-            {
-                dims[i] = 1u;
-            }
-            for (unsigned int i = 0; i < dims1.size(); i++)
+            for (unsigned int i = 0; i < std::min(kDims, dims1.size()); i++)
             {
                 dims[i] = dims1[i];
             }
@@ -199,6 +204,7 @@ private:
         {
             throw 1;
         }
+        return dims;
     }
 
     void ReadData(const std::string &fname_dat)

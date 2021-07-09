@@ -1,10 +1,4 @@
-/*
-#include "../misc/misc.h"
-#include "../misc/misc.hpp"
-#include "../misc/multind.h"
-#include "../misc/mdarray.h"
-*/
-
+#define _GNU_SOURCE
 #include <math.h>
 #include <complex.h>
 #include <float.h>
@@ -125,10 +119,14 @@ static void printPat(const int *mask, const long D, const long dims[]){
 /*
  * Best candidate sampling but use a heap to store J
  */
-void approxBestCandidate(const int D, double *cost, double *deltaJ, 
-                                 int *mask, const SparseW *wsp,
-                                 const long maxSamps[], 
-                                 const long totSamps){
+void approxBestCandidate(const int D,
+                         double *cost,
+                         double *deltaJ,
+                         int *mask,
+                         const SparseW *wsp,
+                         const long maxSamps[],
+                         const long totSamps)
+{
     debug_printf(DP_DEBUG1, "Approximate best candidate smapling...\n");
     
     long nt = wsp->dims[D];
@@ -263,10 +261,11 @@ void approxBestCandidate(const int D, double *cost, double *deltaJ,
  *   mask    = final sampling pattern
  *   samples = sample list
  */
-void exactBestCandidate(const int D, const long dims[], double *cost, double *deltaJ, 
-            int *mask, const double *w,
-            long *samples[], const long maxSamps[], 
-            const long totSamps){
+void exactBestCandidate(const int D, const long dims[], double *cost, double *deltaJ,
+                        int *mask, const double *w,
+                        long *samples[], const long maxSamps[],
+                        const long totSamps)
+{
     //assert(D == 2);
     const long REIM_DIM = 4;
     long nt = dims[D];
@@ -385,10 +384,81 @@ void exactBestCandidate(const int D, const long dims[], double *cost, double *de
     } // end i loop
 }
 
+/*
+ * compute deltaJ, cost change associated with adding a sample 
+ */
+static void compute_deltaj2(const int D, const long dims[], double *deltaJ, const double *w, long *samples[], const long Nsamps[], const int w_type){
+        
+    debug_printf(DP_DEBUG1, "Computing first term in DeltaJ...\n");
+    assert(D == 2);
+    long nt = dims[D];
+    long ksize = md_calc_size(D, dims);
+
+    long strs1[D+2];
+    md_calc_strides(D+2, strs1, dims, 1);
+    
+    for( long t = 0 ; t < nt ; t++ ){
+        double deltaJ_t = w[t*strs1[D] + t*strs1[D+1]];
+        md_fill(D, dims, &deltaJ[t*ksize], &deltaJ_t, sizeof(double));
+    }
+
+    long csize = nt*ksize;
+    for( long kt_new_ind = 0 ; kt_new_ind < csize ; kt_new_ind++ ){
+        for( long t = 0 ; t < nt ; t++ ){
+        for( long i = 0 ; i < Nsamps[t] ; i++ ){
+            long k_new_sub[D+1];
+            idx2sub(D+1, dims, k_new_sub, kt_new_ind);
+
+            // diff = (k_new - si, t_new, t)
+            long diff[D+2]; 
+            if( w_type == 1 ){
+                //debug_printf(DP_DEBUG3, "[%ld %ld] - [%ld %ld] ", k_new_sub[0], k_new_sub[1], samples[t][D*i], samples[t][D*i+1]);
+                subl(D, diff, k_new_sub, &samples[t][D*i]);
+            }else{
+                //debug_printf(DP_DEBUG3, "[%ld %ld] + [%ld %ld] ", samples[t][D*i], samples[t][D*i+1], k_new_sub[0], k_new_sub[1] );
+                addl(D, diff, k_new_sub, &samples[t][D*i]);
+            }
+            modl(D, diff, diff, dims);
+            diff[D+0] = k_new_sub[D];
+            diff[D+1] = t;
+            //debug_printf(DP_DEBUG3, " = [%ld %ld %ld %ld]", diff[0], diff[1], diff[D+0], diff[D+1]);
+            //debug_printf(DP_DEBUG3, ";   ");
+            //debug_printf(DP_DEBUG3, ", w(%ld,%ld) = %f ", diff[0], diff[1], w[sub2idx(D+2, w->strs1, diff)]);
+           
+            // deltaJ[k_new] += w[diff]
+            deltaJ[kt_new_ind] += w[sub2idx(D+2, strs1, diff)];
+
+            // diff = (si - k_new_sub, t, t_new);
+            if( w_type == 1 ){
+                //debug_printf(DP_DEBUG3, "[%ld %ld] - [%ld %ld] ", samples[t][D*i], samples[t][D*i+1], k_new_sub[0], k_new_sub[1] );
+                subl(D, diff, &samples[t][D*i], k_new_sub);
+            }else{
+                //debug_printf(DP_DEBUG3, "[%ld %ld] + [%ld %ld] ", samples[t][D*i], samples[t][D*i+1], k_new_sub[0], k_new_sub[1] );
+                addl(D, diff, &samples[t][D*i], k_new_sub);
+            }
+            modl(D, diff, diff, dims);
+            diff[D+0] = t;
+            diff[D+1] = k_new_sub[D];
+            //debug_printf(DP_DEBUG3, " = [%ld %ld %ld %ld]", diff[0], diff[1], diff[D+0], diff[D+1]);
+
+            // deltaJ[k_new] += w[diff]
+            //debug_printf(DP_DEBUG3, ", w(%ld,%ld) = %f ", diff[0], diff[1], w[sub2idx(D+2, w->strs1, diff)]);
+            //debug_printf(DP_DEBUG3, "\n");
+            deltaJ[kt_new_ind] += w[sub2idx(D+2, strs1, diff)];
+
+        } // end i loop
+        } // end m loop
+        if( 0 == kt_new_ind % (csize/100) ){
+            debug_printf(DP_INFO, "\r%.0f%", 100.0 * (float) kt_new_ind / (float) csize);
+        }
+    } // end k new loop
+    debug_printf(DP_DEBUG1, "Done computing first term in DeltaJ.\n");
+}
+
 void computeDeltaJ(const int D, const long dims[], double *deltaJ, const double *w, long *samples[], const long Nsamps[]){
     debug_printf(DP_DEBUG1, "Computing DeltaJ...\n");
 
-    computeDeltaJ2(D, dims, deltaJ, w, samples, Nsamps, 1);
+    compute_deltaj2(D, dims, deltaJ, w, samples, Nsamps, 1);
     long deltaJ_size = md_calc_size(D+1, dims);
 
     int Nw = dims[D+2];
@@ -396,7 +466,7 @@ void computeDeltaJ(const int D, const long dims[], double *deltaJ, const double 
         debug_printf(DP_DEBUG1, "Computing second term in DeltaJ for real-valued images...\n");
         // Compute the second component
         double *deltaJ2 = xmalloc(deltaJ_size * sizeof(double));
-        computeDeltaJ2(D, dims, deltaJ2, w, samples, Nsamps, 2);
+        compute_deltaj2(D, dims, deltaJ2, w, samples, Nsamps, 2);
 
         // Add to the cost
         addd(deltaJ_size, deltaJ, deltaJ, deltaJ2);
@@ -476,77 +546,6 @@ void computeDeltaJFftMethod(const int kDims, const long w_dims[], complex float 
     md_free(Fw);
     md_free(Fmask);
     debug_printf(DP_DEBUG1, "Done computing DeltaJ\n");
-}
-
-/*
- * compute deltaJ, cost change associated with adding a sample 
- */
-void computeDeltaJ2(const int D, const long dims[], double *deltaJ, const double *w, long *samples[], const long Nsamps[], const int w_type){
-        
-    debug_printf(DP_DEBUG1, "Computing first term in DeltaJ...\n");
-    assert(D == 2);
-    long nt = dims[D];
-    long ksize = md_calc_size(D, dims);
-
-    long strs1[D+2];
-    md_calc_strides(D+2, strs1, dims, 1);
-    
-    for( long t = 0 ; t < nt ; t++ ){
-        double deltaJ_t = w[t*strs1[D] + t*strs1[D+1]];
-        md_fill(D, dims, &deltaJ[t*ksize], &deltaJ_t, sizeof(double));
-    }
-
-    long csize = nt*ksize;
-    for( long kt_new_ind = 0 ; kt_new_ind < csize ; kt_new_ind++ ){
-        for( long t = 0 ; t < nt ; t++ ){
-        for( long i = 0 ; i < Nsamps[t] ; i++ ){
-            long k_new_sub[D+1];
-            idx2sub(D+1, dims, k_new_sub, kt_new_ind);
-
-            // diff = (k_new - si, t_new, t)
-            long diff[D+2]; 
-            if( w_type == 1 ){
-                //debug_printf(DP_DEBUG3, "[%ld %ld] - [%ld %ld] ", k_new_sub[0], k_new_sub[1], samples[t][D*i], samples[t][D*i+1]);
-                subl(D, diff, k_new_sub, &samples[t][D*i]);
-            }else{
-                //debug_printf(DP_DEBUG3, "[%ld %ld] + [%ld %ld] ", samples[t][D*i], samples[t][D*i+1], k_new_sub[0], k_new_sub[1] );
-                addl(D, diff, k_new_sub, &samples[t][D*i]);
-            }
-            modl(D, diff, diff, dims);
-            diff[D+0] = k_new_sub[D];
-            diff[D+1] = t;
-            //debug_printf(DP_DEBUG3, " = [%ld %ld %ld %ld]", diff[0], diff[1], diff[D+0], diff[D+1]);
-            //debug_printf(DP_DEBUG3, ";   ");
-            //debug_printf(DP_DEBUG3, ", w(%ld,%ld) = %f ", diff[0], diff[1], w[sub2idx(D+2, w->strs1, diff)]);
-           
-            // deltaJ[k_new] += w[diff]
-            deltaJ[kt_new_ind] += w[sub2idx(D+2, strs1, diff)];
-
-            // diff = (si - k_new_sub, t, t_new);
-            if( w_type == 1 ){
-                //debug_printf(DP_DEBUG3, "[%ld %ld] - [%ld %ld] ", samples[t][D*i], samples[t][D*i+1], k_new_sub[0], k_new_sub[1] );
-                subl(D, diff, &samples[t][D*i], k_new_sub);
-            }else{
-                //debug_printf(DP_DEBUG3, "[%ld %ld] + [%ld %ld] ", samples[t][D*i], samples[t][D*i+1], k_new_sub[0], k_new_sub[1] );
-                addl(D, diff, &samples[t][D*i], k_new_sub);
-            }
-            modl(D, diff, diff, dims);
-            diff[D+0] = t;
-            diff[D+1] = k_new_sub[D];
-            //debug_printf(DP_DEBUG3, " = [%ld %ld %ld %ld]", diff[0], diff[1], diff[D+0], diff[D+1]);
-
-            // deltaJ[k_new] += w[diff]
-            //debug_printf(DP_DEBUG3, ", w(%ld,%ld) = %f ", diff[0], diff[1], w[sub2idx(D+2, w->strs1, diff)]);
-            //debug_printf(DP_DEBUG3, "\n");
-            deltaJ[kt_new_ind] += w[sub2idx(D+2, strs1, diff)];
-
-        } // end i loop
-        } // end m loop
-        if( 0 == kt_new_ind % (csize/100) ){
-            debug_printf(DP_INFO, "\r%.0f%", 100.0 * (float) kt_new_ind / (float) csize);
-        }
-    } // end k new loop
-    debug_printf(DP_DEBUG1, "Done computing first term in DeltaJ.\n");
 }
 
 // Check sns_dims

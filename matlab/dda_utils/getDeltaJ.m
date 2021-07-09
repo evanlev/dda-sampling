@@ -45,7 +45,7 @@ if use_cpp
         rm_dat(pat_file, w_file, out_file);
     else
         % FFT
-        deltaJ = bart_0209('my_getDeltaJ', w, pat);
+        deltaJ = bart_0700('dda_getDeltaJ', w, pat);
         deltaJ = abs(deltaJ);
     end
 else

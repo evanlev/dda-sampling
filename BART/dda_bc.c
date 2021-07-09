@@ -18,8 +18,7 @@
 
 #include "dda_tools/dda_utils.h"
 
-static const char* usage_str = "<input maps, dims: xres, yres, zres, coils, maps, time, maps2> <output pattern>";
-static const char* help_str = 	"Generate a sampling pattern for sensitivity maps. Map dims are xres,yres,zres,coils,maps,time,maps2,\n"
+static const char* usage_str = 	"Generate a sampling pattern for sensitivity maps. Map dims are xres,yres,zres,coils,maps,time,maps2,\n"
                                 "where the image is formed as DF{ sum_{k,l} sns_maps(:,:,:,:,k,:,l) m(:,:,:,1,k,1,l)}. It is sometimes \n"
                                 "convenient to use both k and l (maps and maps2) indices (dimensions). Best candidate sampling is used, \n"
                                 "and can be made faster with -T or -K options.";
@@ -36,6 +35,14 @@ int main_dda_bc(int argc, char* argv[])
     bool exact = false;
     float T = 0;
     int K = 0;
+    const char* pat_file = NULL;
+    const char* maps_file = NULL;
+
+    struct arg_s args[] = {
+        ARG_INFILE(true, &maps_file, "sensitivity maps"),
+        ARG_OUTFILE(true, &pat_file, "pattern"),
+    };
+
     const struct opt_s opts[] = {
         OPT_INT('d', &debug_level, "level", "debug level"),
         OPT_INT('t', &maxST, "maxST", "max samples per frame"),
@@ -45,8 +52,8 @@ int main_dda_bc(int argc, char* argv[])
         OPT_FLOAT('T', &T, "T", "Set w(Delta k, t, t') < T to 0"),
     };
 
-    cmdline(&argc, argv, 2, 2, usage_str, help_str, ARRAY_SIZE(opts), opts);
-
+    cmdline(&argc, argv, ARRAY_SIZE(args), args, usage_str, ARRAY_SIZE(opts), opts);
+	
     // Check options: see setup later
     if( (K != 0 || T != 0) && exact ){
         debug_printf(DP_ERROR, "For exact BC sampling, do not provide thresholding parameters -T or -K\n");
@@ -148,7 +155,7 @@ int main_dda_bc(int argc, char* argv[])
 
     // Convert output for complex
     debug_printf(DP_DEBUG3, "Converting output pattern\n");
-    complex float *pat_cfl = create_cfl(argv[2], DIMS, pat_dims);
+    complex float *pat_cfl = create_cfl(pat_file, DIMS, pat_dims);
     int2cfl(pat_size, pat_cfl, pat_int);
     
     // cleanup

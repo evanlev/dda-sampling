@@ -1,5 +1,5 @@
 clear, close all;
-addpath('../utils');
+#addpath('../utils');
 TE_DIM = 6;
 TEMAP_DIM = 7;
 COIL_DIM = 4;
@@ -13,6 +13,7 @@ R = 4;
 K = 32;               % Support of w to use
 nMonte = 200; 
 nMonteFull  = 400; 
+bcfast_path = '../../../cpp/bcfast/bcfast'
 % -------------------
 
 %% Set up save file
@@ -23,13 +24,22 @@ fprintf('Data will be saved to %s\n', savestr);
 % Coil sensitivities
 load('../../data/vfa4d_ccomp_sl130.mat');
 
+if ~exist(bcfast_path, 'file')
+    error(["Please compile the bcfast executable and set the path to it. Program does not exist at " bcfast_path])
+end
+
+if isempty(getenv('TOOLBOX_PATH'))
+		error('This demo requires BART to be installed and the environment variable TOOLBOX_PATH to be set.');
+end
+
 % Synthetic data
-f_coil_combine = @(X) bart_0209('pics -w1 -S -d0 -i1 ', X, sns_maps); 
-f_sense =        @(X) bart_0209('pics -w1 -S -d0 -i75', X, sns_maps);
+f_coil_combine = @(X) bart_0700('pics -w1 -S -d0 -i1 ', X, sns_maps); 
+f_sense =        @(X) bart_0700('pics -w1 -S -d0 -i75', X, sns_maps);
 
 %% Noise map full
 disp('g-factor map for fully sampled image');
-sigma = rms(kData(:))*1e-1;
+f_rms = @(X) sqrt(mean(X(:).^2));
+sigma = f_rms(kData)*1e-1;
 kData = (randn(size(kData))*sqrt(-1) + randn(size(kData))) * sigma * 100/sqrt(2);
 
 if show_gfactor
@@ -38,22 +48,22 @@ if show_gfactor
     gMapFull(~supp) = Inf;
 end
 
-%% Get w 
-wmtx = buildW(sns_maps);
-
 %% Create masks
 masks = [];
 names = {};
 % -- Poisson-disc
-mask_pd = bart_0209(sprintf('poisson -Y%d -Z%d -y%f -z%f', size(kData,2), size(kData,3), ...
+mask_pd = bart_0700(sprintf('poisson -Y%d -Z%d -y%f -z%f', size(kData,2), size(kData,3), ...
         sqrt(R), sqrt(R)));
 masks = cat(4,masks,mask_pd);
 names{end+1} = 'Poisson-disc';
+maxSamples = sum(mask_pd(:));
+
+%% Get w 
+wmtx = buildW(sns_maps);
 
 % -- Approximate best candidate
-maxSamples = sum(mask_pd(:));
 tic;
-mask_abc = best_candidate(wmtx, maxSamples, 'K', K);
+mask_abc = best_candidate(bcfast_path, wmtx, maxSamples, 'K', K);
 fprintf('Approximate best candidate with K = %d took %f sec\n', K, toc);
 mask_abc = shiftdim(mask_abc, -1);
 masks = cat(4,masks,mask_abc);
@@ -62,7 +72,7 @@ names{end+1} = 'Approximate BC';
 % -- Best candidate 
 if show_ebc
     tic;
-    mask_ebc = best_candidate(wmtx, maxSamples);
+    mask_ebc = best_candidate(bcfast_path, wmtx, maxSamples);
     t0 = toc;
     fprintf('Exact best candidate sampling took %f sec\n', t0);
     mask_ebc = shiftdim(mask_ebc, -1);
@@ -96,7 +106,7 @@ if show_gfactor
         % g-factor stats
         gMap(:,:,:,k) = gMap(:,:,:,k) ./ gMapFull;
         
-        gRMS(k) = rms(vec(gMap(:,:,:,k)));
+        gRMS(k) = f_rms(vec(gMap(:,:,:,k)));
         gMax(k) = max(vec(gMap(:,:,:,k)));
         gMean(k) = mean(vec(gMap(:,:,:,k)));
     end
@@ -108,7 +118,10 @@ for k = 1:size(masks,4)
     deltaJ(:,:,k) = getDeltaJ(squeeze(masks(:,:,:,k)), wmtx);
 end
 fprintf('Saving %s...', savestr);
-save(savestr, '-v7.3');
+
+if ~exist('OCTAVE_VERSION', 'builtin') ~= 0
+    save(savestr, '-v7.3');
+end
 
 fprintf('%s done\n', mfilename('fullpath'));
 

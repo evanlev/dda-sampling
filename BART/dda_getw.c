@@ -19,8 +19,7 @@
 
 #include "dda_tools/dda_utils.h"
 
-static const char* usage_str = "<input maps> <output w>";
-static const char* help_str = 	"Convert sensitivity maps to a weighting w\n"
+static const char* usage_str = 	"Convert sensitivity maps to a weighting w\n"
                                 "maps have dimensions [nx ny nz nc nt nl]\n"
                                 "The forward model is \n"
                                 "y(k,t,c,l,m) = D_t F{ sum_{l,m} S(r,t,c,l,m) x_{l,m}},\n"
@@ -28,14 +27,23 @@ static const char* help_str = 	"Convert sensitivity maps to a weighting w\n"
 
 int main_dda_getw(int argc, char* argv[])
 {
+    const char* w_file = NULL;
+    const char* maps_file = NULL;
+
+    struct arg_s args[] = {
+        ARG_INFILE(true, &maps_file, "maps"),
+        ARG_OUTFILE(true, &w_file, "w"),
+    };
+
     const struct opt_s opts[] = {
         OPT_INT('d', &debug_level, "level", "debug level"),
     };
-    cmdline(&argc, argv, 2, 2, usage_str, help_str, ARRAY_SIZE(opts), opts);
+
+    cmdline(&argc, argv, ARRAY_SIZE(args), args, usage_str, ARRAY_SIZE(opts), opts);
     
     // Read in sensitivity maps
     long sns_dims[DIMS];
-    complex float *sns_maps = load_cfl(argv[1], DIMS, sns_dims);
+    complex float *sns_maps = load_cfl(maps_file, DIMS, sns_dims);
 
     // Check input
     check_sns_dims(sns_dims);
@@ -44,7 +52,7 @@ int main_dda_getw(int argc, char* argv[])
     long w_dims[DIMS];
     get_w_dims(w_dims, sns_dims);
     double *w = md_alloc(DIMS, w_dims, sizeof(double));
-    complex float *wc = create_cfl(argv[2], DIMS, w_dims);
+    complex float *wc = create_cfl(w_file, DIMS, w_dims);
     buildW2(wc, sns_dims, sns_maps);
     
     // cleanup

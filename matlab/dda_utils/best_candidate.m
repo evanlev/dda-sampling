@@ -1,10 +1,11 @@
-% [pat, cost] = best_candidate(w, totSamples, ... )
+% [pat, cost] = best_candidate(bcfast_path, w, totSamples, ... )
 %
 % Best candidate sampling, default uses exact method, but 
 % options specify approximate method.
 %
 % INPUTS:
-%   w           = 
+%   bcfast_path = path to bcfast executable
+%   w           = weighting function
 %   totSamples  = total samples for all frames
 % Optional INPUTS:
 %   'Max Per Frame' = set a max # samples per frame
@@ -12,7 +13,7 @@
 %   'M', M          = number of neighbors for w
 % OUTPUTS:
 %   pat     = pattern
-function [pat] = best_candidate(w, totSamples, varargin)
+function [pat] = best_candidate(bcfast_path, w, totSamples, varargin)
 
 nt = size(w,3);
 
@@ -73,7 +74,7 @@ if opt.K
 end
 
 % Run the sampling algorithm
-run_sysstr(['bcfast ', args]);
+run_sysstr([bcfast_path, ' ', args]);
 
 % Read pattern
 pat = read_pat(patfile);

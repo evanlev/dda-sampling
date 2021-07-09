@@ -28,7 +28,7 @@ end
 function weighting = buildW2(sns_maps, use_bart)
 
     if use_bart
-        weighting = bart_0209('my_getw', sns_maps);
+        weighting = bart_0700('dda_getw', sns_maps);
     else
         TEMAP_DIM = 7;
         TE_DIM    = 6; % time (t variable)

@@ -16,10 +16,10 @@ There are MATLAB, C, and C++ implementations.
 MATLAB code, test scripts, and two demos. Implementations of sampling functions
 in MATLAB are provided in matlab/dda_utils.
 
-### BART/
+### BART 0.7.00
 C code that can be used with the Berkeley Advanced Reconstruction Toolbox (BART).
 If this is not set up, MATLAB code will revert to slower implementations in MATLAB. 
-The following functions are provided.
+The following functions should be added.
 
 ##### dda_getw.c
 Calculate w from sensitivity maps.
@@ -45,7 +45,7 @@ C++ to implement the data structures used in best candidate sampling.
 
 MATLAB. 
 
-g++ and BART highly recommended for functions to run fast. 
+g++ and BART 0.7.00 highly recommended for functions to run fast. 
 For cpp version, cmake and boost are required. On macOS, run "brew install boost" with homebrew.
 
 ### 2.2. Setup
@@ -68,26 +68,23 @@ Steps to set up BART code are:
    This is the library with sampling functions
 3) Copy the C files in bart, dda_getp.c, dda_getw.c, dda_getDeltaJ.c, dda_bc.c 
    to bart/src/. 
-4) Add these 4 lines to the Makefile with the other MODULES_*. It should look like
-   BART/Makefile
+4) Make the following changes to the BART Makefile so that it looks like BART/Makefile
 
+Add these lines:
+MODULES_bart = -lbox -lgrecon -lsense -lnoir -liter -llinops -lwavelet -llowrank -lnoncart -lcalib -lsimu -lsake -ldfwavelet -lnlops -lmoba -lgeom -lnn -ldda_tools
 MODULES_dda_bc = -ldda_tools 
 MODULES_dda_getw = -ldda_tools 
 MODULES_dda_getp = -ldda_tools 
 MODULES_dda_getDeltaJ = -ldda_tools 
-
-Modify XTARGETS in Makefile
-XTARGETS += $(TBASE) $(TFLP) $(TNUM) $(TIO) $(TRECO) $(TCALIB) $(TMRI) $(TSIM) $(TSAMPLING)
-
-5) Copy dda_tools.mk to bart/rules
-
-6) Add the line to build_targets.mk
 TSAMPLING=dda_bc dda_getp dda_getw dda_getDeltaJ
 
-7) Compile the BART code with:
+Modify the following lines:
+XTARGETS += $(TBASE) $(TFLP) $(TNUM) $(TIO) $(TRECO) $(TCALIB) $(TMRI) $(TSIM) $(TSAMPLING)
+ALIBS = misc num grecon sense noir iter linops wavelet lowrank noncart calib simu sake dfwavelet nlops moba lapacke box geom nn dda_tools
+MODULES_bart = -lbox -lgrecon -lsense -lnoir -liter -llinops -lwavelet -llowrank -lnoncart -lcalib -lsimu -lsake -ldfwavelet -lnlops -lmoba -lgeom -lnn -ldda_tools
+
+5) Compile the BART code with:
     $ make dda_getp
     $ make dda_getw
     $ make dda_getDeltaJ
     $ make dda_bc
-
-

@@ -23,7 +23,7 @@ function p = get_dd(mask, opt, use_bart)
     
     if use_bart
         % Use BART O(samples ^ 2)
-        p = bart_0209('my_getp', mask);
+        p = bart_0700('dda_getp', mask);
     else
         % Use an FFT method, usually faster if the pattern is not sparse
         PSF = ifft(ifft(mask, [], 1), [], 2);
