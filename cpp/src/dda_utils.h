@@ -44,7 +44,7 @@ private:
 };
 
 template <size_t PhaseEncodeDims>
-MDArray<PhaseEncodeDims + 2, double> computeDiffDist(const vector<vector<long>> &samples, const long dims[]);
+MDArray<PhaseEncodeDims + 2, double> computeDiffDist(const std::vector<std::vector<long>> &samples, const long dims[]);
 
 template <size_t PhaseEncodeDims>
 MDArray<PhaseEncodeDims + 1, double> ComputeDeltaJ(const MDArray<PhaseEncodeDims + 2, double> &w,
@@ -60,7 +60,7 @@ void SampleExactBestCandidate(const MDArray<PhaseEncodeDims + 2, double> &kernel
 
 template <size_t PhaseEncodeDims>
 void SampleApproxBestCandidate(const SparseKernel& sparse_kernel,
-                               const vector<long> &maxSamps, 
+                               const std::vector<long> &maxSamps, 
                                long totSamps,
                                MDArray<PhaseEncodeDims + 1, int> &mask,
                                double &cost);

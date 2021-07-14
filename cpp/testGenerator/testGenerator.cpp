@@ -11,7 +11,6 @@
 #include "mdarray.h"
 #include "multind.h"
 #include "misc.h"
-#include "misc.hpp"
 #include "dda_utils.h"
 #include "debug.h"
 
@@ -59,7 +58,7 @@ int main(int argc, char *argv[])
     const std::array<long, kPhaseEncodeDims + 2> kernelDims = {patDims[0], patDims[1], patDims[2], patDims[2]};
     const long N = md_calc_size(patDims);
     const long totSamps = N / reduction_factor;
-    const vector<long> max_samples_per_frame_array(nt, 100 * patDims[0] * patDims[1] / reduction_factor);
+    const std::vector<long> max_samples_per_frame_array(nt, 100 * patDims[0] * patDims[1] / reduction_factor);
 
     // Create kernel
     MDArray<4, double> kernel(kernelDims);

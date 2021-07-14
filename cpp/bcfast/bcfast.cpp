@@ -11,7 +11,6 @@
 #include "mdarray.h"
 #include "multind.h"
 #include "misc.h"
-#include "misc.hpp"
 #include "dda_utils.h"
 #include "debug.h"
 #include "config.h"
@@ -35,7 +34,7 @@ namespace
     template <size_t D>
     void writePat(const std::string& filename, const std::array<long, D>& pat_dims, int *pat)
     {
-        //debug_printf(DP_INFO, "Writing pattern...\n");
+        debug_printf(DP_DEBUG4, "Writing pattern...\n");
         long N = md_calc_size(pat_dims);
         FILE *pFile = fopen(filename.c_str(), "w");
 
@@ -59,7 +58,7 @@ namespace
 /*
  * Use boost to process command line arguments
  */
-static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &maxSamplesPerFrame, int &totalSamples, int &exact, string &kernel_file, string &patfile)
+static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &maxSamplesPerFrame, int &totalSamples, int &exact, std::string &kernel_file, std::string &patfile)
 {
     try
     {
@@ -71,8 +70,8 @@ static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &m
             ("K", po::value<int>(&K), "set support of thresholded w")
             ("S", po::value<int>(&totalSamples), "total samples")
             ("e", po::value<int>(&exact), "exact best candidate")
-            ("w", po::value<string>(&kernel_file), "weighting file")
-            ("pat", po::value<string>(&patfile), "pattern file");
+            ("w", po::value<std::string>(&kernel_file), "weighting file")
+            ("pat", po::value<std::string>(&patfile), "pattern file");
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -81,7 +80,7 @@ static bool processCommandLine(int argc, char *argv[], double &T, int &K, int &m
         // S = total samples
         if (!vm.count("S") || !vm.count("w") || !vm.count("pat"))
         {
-            cout << desc << "\n";
+            std::cout << desc << "\n";
             return false;
         }
         // default max samples per phase

@@ -20,14 +20,9 @@ extern void debug_vprintf(int level, const char* fmt, va_list ap);
 
 void logerror(const char *fmt, ... );
 
-void myAssert( int exp, const char *err);
-
-int is_in_bounds(const unsigned int D, const long *d, const long *dims);
+void assert_with_log(int exp, const char *err);
 
 void assert_is_binary(const long N, const int *arr, const char *arrstr);
-
-void assert_in_bounds(const unsigned int D, const long *d, 
-                        const long *dims, const char *str);
 
 void debug_print_dims(const int level, const unsigned int D, const long *d1);
 

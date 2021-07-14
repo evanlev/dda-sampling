@@ -71,16 +71,25 @@ Steps to set up BART code are:
 4) Make the following changes to the BART Makefile so that it looks like BART/Makefile
 
 Add these lines:
+
 MODULES_bart = -lbox -lgrecon -lsense -lnoir -liter -llinops -lwavelet -llowrank -lnoncart -lcalib -lsimu -lsake -ldfwavelet -lnlops -lmoba -lgeom -lnn -ldda_tools
+
 MODULES_dda_bc = -ldda_tools 
+
 MODULES_dda_getw = -ldda_tools 
+
 MODULES_dda_getp = -ldda_tools 
+
 MODULES_dda_getDeltaJ = -ldda_tools 
+
 TSAMPLING=dda_bc dda_getp dda_getw dda_getDeltaJ
 
 Modify the following lines:
+
 XTARGETS += $(TBASE) $(TFLP) $(TNUM) $(TIO) $(TRECO) $(TCALIB) $(TMRI) $(TSIM) $(TSAMPLING)
+
 ALIBS = misc num grecon sense noir iter linops wavelet lowrank noncart calib simu sake dfwavelet nlops moba lapacke box geom nn dda_tools
+
 MODULES_bart = -lbox -lgrecon -lsense -lnoir -liter -llinops -lwavelet -llowrank -lnoncart -lcalib -lsimu -lsake -ldfwavelet -lnlops -lmoba -lgeom -lnn -ldda_tools
 
 5) Compile the BART code with:

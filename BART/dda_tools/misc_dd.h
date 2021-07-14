@@ -36,6 +36,6 @@ extern void assert_is_binary(const long N, const int *arr, const char *arrstr);
 
 extern void assert_in_bounds(const unsigned int D, const long *d, const long *dims, const char *str);
 
-extern void myAssert( int exp, const char *err);
+extern void assert(int exp, const char *err);
 
 #endif // MISC_DD_H

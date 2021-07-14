@@ -2,26 +2,23 @@
 #define MDARRAY_H 1
 
 #include <algorithm>
-#include <numeric>
+#include <numeric> // std::accumulate
 #include <string>
 #include <iostream>
-#include <fstream>      // std::ifstream
+#include <fstream> // std::ifstream
 #include <memory>
-#include <sstream>      // std::stringstream
 #include <vector>
 #include "debug.h"
 #include "multind.h"
 
-template<size_t D, typename T>
-class MDArray 
+template <size_t NDims, typename T>
+class MDArray
 {
 public:
-    static constexpr size_t kDims = D;
-
     // Constructors
     MDArray() = default;
 
-    explicit MDArray(const std::array<long, D>& dims)
+    explicit MDArray(const std::array<long, NDims> &dims)
     {
         Resize(dims);
     }
@@ -35,7 +32,7 @@ public:
 
         try
         {
-            const std::array<long, kDims> dims = ReadHeader(fname_hdr);
+            const std::array<long, NDims> dims = ReadHeader(fname_hdr);
             Resize(dims);
             ReadData(fname_dat);
         }
@@ -62,18 +59,21 @@ public:
         debug_printf(DP_DEBUG3, "Done!\n");
     }
 
-    T* Data()
+    const T *Data() const
     {
         return m_data.data();
     }
 
-    void Resize(const std::array<long, kDims>& dims)
+    T *Data()
+    {
+        return m_data.data();
+    }
+
+    void Resize(const std::array<long, NDims> &dims)
     {
         m_dims = dims;
         m_strs = md_calc_strides(m_dims, 1);
-        m_len = md_calc_size(kDims, m_dims.data());
-        std::cout << "resizing to " << m_dims[0] << " " << m_dims[1] << " " << m_dims[2] << " " << " " << m_dims[3] << std::endl;
-        std::cout << "Lenght: " << m_len << std::endl;
+        m_len = md_calc_size(NDims, m_dims.data());
         m_data.resize(m_len);
     }
 
@@ -86,12 +86,12 @@ public:
         return dataCopy[dataCopy.size() - k - 1];
     }
 
-    const std::array<long, D>& Dims() const
+    const std::array<long, NDims> &Dims() const
     {
         return m_dims;
     }
 
-    const std::array<long, D>& Strides() const
+    const std::array<long, NDims> &Strides() const
     {
         return m_strs;
     }
@@ -111,31 +111,9 @@ public:
         return std::accumulate(m_data.begin(), m_data.end(), 0);
     }
 
-    std::string toString(){
-        std::stringstream ss;
-        if (m_len > 300)
-        {
-            ss << "array of size [";
-            for (long i = 0; i < kDims; i++)
-                ss << m_dims[i] << " ";
-            ss << "]";
-        }
-        else
-        {
-            ss << "[";
-            for (long i = 0; i < m_len; i++)
-            {
-                ss << m_data[i] << " ";
-            }
-            ss << "];\n";
-        }
-
-        return ss.str();
-    }
-
     const T &operator[](const int index) const
     {
-        return const_cast<MDArray<D, T>&>(*this)[index];
+        return const_cast<MDArray<NDims, T> &>(*this)[index];
     }
 
     T &operator[](const int index)
@@ -153,7 +131,7 @@ public:
 
         std::ofstream myfile;
         myfile.open(filename_hdr.c_str());
-        for (int i = 0; i < kDims; i++)
+        for (int i = 0; i < NDims; i++)
         {
             myfile << m_dims[i];
             myfile << " ";
@@ -173,12 +151,13 @@ public:
         fclose(fp);
         debug_printf(DP_DEBUG1, "Done!\n");
     }
+
 private:
-    std::array<long, kDims> ReadHeader(const std::string &fname_hdr)
+    std::array<long, NDims> ReadHeader(const std::string &fname_hdr)
     {
         // Read header file
         std::ifstream file_hdr(fname_hdr.c_str());
-        std::array<long, kDims> dims;
+        std::array<long, NDims> dims;
         std::fill(dims.begin(), dims.end(), 1);
         if (file_hdr.is_open())
         {
@@ -187,7 +166,7 @@ private:
             while (file_hdr >> current_dim)
             {
                 dims1.push_back(current_dim);
-                if (dims1.size() > kDims && current_dim != 1)
+                if (dims1.size() > NDims && current_dim != 1)
                 {
                     std::cerr << "MDArray does not have enough dimensions, dim: " << current_dim << std::endl;
                     exit(0);
@@ -195,7 +174,7 @@ private:
             }
 
             // Read dimensions, pad with ones
-            for (unsigned int i = 0; i < std::min(kDims, dims1.size()); i++)
+            for (unsigned int i = 0; i < std::min(NDims, dims1.size()); i++)
             {
                 dims[i] = dims1[i];
             }
@@ -231,16 +210,34 @@ private:
     }
 
     long m_len;
-    std::array<long, D> m_dims;
-    std::array<long, D> m_strs;
+    std::array<long, NDims> m_dims;
+    std::array<long, NDims> m_strs;
     std::vector<T> m_data;
 };
 
-template <unsigned int Dims, typename T>
-std::ostream& operator<<(std::ostream &os, const MDArray<Dims, T> & dt){
-    os << dt.toString();
+template <unsigned int NDims, typename T>
+std::ostream &operator<<(std::ostream &os, const MDArray<NDims, T> &arr)
+{
+    std::stringstream ss;
+    if (arr.Length() > 300)
+    {
+        os << "array of size [";
+        for (long i = 0; i < NDims; i++)
+        {
+            os << arr.Dims()[i] << " ";
+        }
+        os << "]";
+    }
+    else
+    {
+        os << "[";
+        for (long i = 0; i < arr.Length(); i++)
+        {
+            os << arr[i] << " ";
+        }
+        os << "];\n";
+    }
     return os;
 }
 
 #endif // MDARRAY_H
-

@@ -11,7 +11,6 @@
 #include "mdarray.h"
 #include "multind.h"
 #include "misc.h"
-#include "misc.hpp"
 #include "dda_utils.h"
 #include "debug.h"
 #include "sampleHeap.h"

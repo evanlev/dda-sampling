@@ -1,5 +1,4 @@
 #include "misc.h"
-#include "misc.hpp"
 #include "multind.h"
 #include "mdarray.h"
 #include "debug.h"
@@ -21,7 +20,7 @@ void SparseKernel::Print() const
     {
         for (long t1 = 0; t1 < m_wKeyValuePairs[t2].size(); t1++)
         {
-            for (const auto &[location, value] : m_wKeyValuePairs[t2][t1] )
+            for (const auto &[location, value] : m_wKeyValuePairs[t2][t1])
             {
                 debug_printf(DP_INFO, "w(");
                 for (int i = 0; i < kPhaseEncodeDims; i++)
@@ -47,12 +46,12 @@ SparseKernel::SparseKernel(const MDArray<kPhaseEncodeDims + 2, double> &kernel, 
     m_w00tt.resize(nt);
     for (long t = 0; t < nt; t++)
     {
-        m_w00tt[t] = kernel[t * strs[kPhaseEncodeDims] + t * strs[kPhaseEncodeDims + 1]];
+        m_w00tt[t] = kernel[t * (strs[kPhaseEncodeDims] + strs[kPhaseEncodeDims + 1])];
     }
 
     // Allocate w k-v pairs
     m_wKeyValuePairs.resize(nt);
-    for (auto& kv : m_wKeyValuePairs)
+    for (auto &kv : m_wKeyValuePairs)
     {
         kv.resize(nt);
     }
@@ -80,7 +79,7 @@ SparseKernel::SparseKernel(const MDArray<kPhaseEncodeDims + 2, double> &kernel, 
     debug_printf(DP_INFO, "w support: %d/%d = %f\n", supp, nt * nt * kSize, (float)supp / (float)(nt * nt * kSize));
 }
 
-void printPat(const MDArray<kPhaseEncodeDims+1, int> &mask)
+void printPat(const MDArray<kPhaseEncodeDims + 1, int> &mask)
 {
     static int maskPrintCount = 1;
     debug_printf(DP_INFO, "mask(:,%d) = [", maskPrintCount++);
@@ -96,7 +95,7 @@ void printPat(const MDArray<kPhaseEncodeDims+1, int> &mask)
  */
 template <size_t PhaseEncodeDims>
 void SampleApproxBestCandidate(const SparseKernel &wsp,
-                               const vector<long> &maxSamplesPerFrame,
+                               const std::vector<long> &maxSamplesPerFrame,
                                long totSamps,
                                MDArray<PhaseEncodeDims + 1, int> &mask,
                                double &cost)
@@ -108,7 +107,7 @@ void SampleApproxBestCandidate(const SparseKernel &wsp,
 
     std::array<long, PhaseEncodeDims + 2> strs = md_calc_strides(wsp.Dims(), 1);
 
-    MDArray<PhaseEncodeDims+1, double> deltaJ(mask.Dims());
+    MDArray<PhaseEncodeDims + 1, double> deltaJ(mask.Dims());
 
     // Initialize deltaJ
     for (long t = 0; t < nt; t++)
@@ -159,13 +158,13 @@ void SampleApproxBestCandidate(const SparseKernel &wsp,
         // --- Update total cost
         cost += deltaJ[snew.getKTIndex()];
 
-        const SparseKernel::WType& weighting = wsp.GetW();
+        const SparseKernel::WType &weighting = wsp.GetW();
 
         // --- Update insert cost (deltaJ), even for frames that are full
         for (long t = 0; t < nt; t++)
         {
             // w( Delta k, t, t' )
-            for (const auto& [location, value] : weighting[t][tNew])
+            for (const auto &[location, value] : weighting[t][tNew])
             {
                 // tmp = k' + (Delta k)_j
                 long tmp[PhaseEncodeDims + 1];
@@ -176,8 +175,8 @@ void SampleApproxBestCandidate(const SparseKernel &wsp,
                 heap.increaseKey(heap.getKt2idx(i1), value);
             }
 
-            // w( Delta k, t', t)
-            for (const auto& [location, value] : weighting[tNew][t] )
+            // w(\Delta k, t', t)
+            for (const auto &[location, value] : weighting[tNew][t])
             {
                 // tmp = k' - (Delta k)_j
                 long tmp[PhaseEncodeDims + 1];
@@ -227,7 +226,7 @@ struct GetArgmin
         std::random_shuffle(m_perm.begin(), m_perm.end());
     }
 
-    double operator()(const MDArray<kPhaseEncodeDims+1, double> &array) const
+    double operator()(const MDArray<kPhaseEncodeDims + 1, double> &array) const
     {
         assert(array.Length() > 0);
         long argmin = 0;
@@ -235,7 +234,6 @@ struct GetArgmin
         for (long j = 0; j < array.Length(); j++)
         {
             long i = m_perm[j];
-            // long i = j;
             if (array[i] < min || (array[i] == min && (rand() % 2 < 1)))
             {
                 argmin = i;
@@ -244,6 +242,7 @@ struct GetArgmin
         }
         return argmin;
     }
+
 private:
     std::vector<long> m_perm;
 };
@@ -309,7 +308,7 @@ void SampleExactBestCandidate(const MDArray<PhaseEncodeDims + 2, double> &kernel
         long ktNewSub[PhaseEncodeDims + 1];
         ind2sub(mask.Dims(), ktNewSub, ktNewInd);
         long tNew = ktNewSub[PhaseEncodeDims];
-        myAssert(!frameIsFull[tNew], "argmin should not have selected a full frame!");
+        assert_with_log(!frameIsFull[tNew], "argmin should not have selected a full frame!");
 
         // --- Add sample
         // Increment mask
@@ -371,11 +370,11 @@ void SampleExactBestCandidate(const MDArray<PhaseEncodeDims + 2, double> &kernel
 }
 
 template <size_t PhaseEncodeDims>
-MDArray<PhaseEncodeDims+1, double> ComputeDeltaJ(const MDArray<PhaseEncodeDims + 2, double> &kernel,
-                                                 const MDArray<PhaseEncodeDims+1, int> &mask)
+MDArray<PhaseEncodeDims + 1, double> ComputeDeltaJ(const MDArray<PhaseEncodeDims + 2, double> &kernel,
+                                                   const MDArray<PhaseEncodeDims + 1, int> &mask)
 {
 
-    MDArray<PhaseEncodeDims+1, double> deltaJ(mask.Dims());
+    MDArray<PhaseEncodeDims + 1, double> deltaJ(mask.Dims());
 
     debug_printf(DP_DEBUG1, "Computing first term in DeltaJ...\n");
     const long nframes = kernel.Dims()[PhaseEncodeDims];
@@ -410,7 +409,7 @@ MDArray<PhaseEncodeDims+1, double> ComputeDeltaJ(const MDArray<PhaseEncodeDims +
 
             // deltaJ[k_new] += w[diff]
             deltaJ[ktNewInd] += static_cast<double>(mask[ktSampleInd]) *
-                                                    kernel[sub2ind(kernel.Strides(), diff)];
+                                kernel[sub2ind(kernel.Strides(), diff)];
 
             // diff = (si - ktNewSub, t, tNew);
             sub(PhaseEncodeDims, diff, ktSampleSub.data(), ktNewSub.data());
@@ -420,7 +419,7 @@ MDArray<PhaseEncodeDims+1, double> ComputeDeltaJ(const MDArray<PhaseEncodeDims +
 
             // deltaJ[k_new] += w[diff]
             deltaJ[ktNewInd] += static_cast<double>(mask[ktSampleInd]) *
-                                 kernel[sub2ind(kernel.Strides(), diff)];
+                                kernel[sub2ind(kernel.Strides(), diff)];
 
         } // end i loop
         debug_printf(DP_DEBUG1, "\r%d%", 100.0 * (float)ktNewInd / (float)cSize);
@@ -437,7 +436,7 @@ MDArray<PhaseEncodeDims+1, double> ComputeDeltaJ(const MDArray<PhaseEncodeDims +
 template <size_t PhaseEncodeDims>
 MDArray<PhaseEncodeDims + 2, double> computeDiffDist(const MDArray<PhaseEncodeDims + 1, int> &mask)
 {
-    const std::array<long, PhaseEncodeDims + 1>& maskDims = mask.Dims();
+    const std::array<long, PhaseEncodeDims + 1> &maskDims = mask.Dims();
     const std::array<long, PhaseEncodeDims + 2> pDims = {maskDims[0], maskDims[1], maskDims[2], maskDims[2]};
     MDArray<PhaseEncodeDims + 2, double> p(pDims);
     p.Clear();
@@ -466,10 +465,8 @@ MDArray<PhaseEncodeDims + 2, double> computeDiffDist(const MDArray<PhaseEncodeDi
     return p;
 }
 
-// Explicit instantation.
-template
-MDArray<kPhaseEncodeDims + 1, double> ComputeDeltaJ<kPhaseEncodeDims>(const MDArray<kPhaseEncodeDims+2, double> &kernel,
-                                                                      const MDArray<kPhaseEncodeDims+1, int> &mask);
+template MDArray<kPhaseEncodeDims + 1, double> ComputeDeltaJ<kPhaseEncodeDims>(const MDArray<kPhaseEncodeDims + 2, double> &kernel,
+                                                                               const MDArray<kPhaseEncodeDims + 1, int> &mask);
 
 template void SampleApproxBestCandidate<kPhaseEncodeDims>(const SparseKernel &wsp,
                                                           const std::vector<long> &maxSamplesPerFrame,
@@ -477,13 +474,11 @@ template void SampleApproxBestCandidate<kPhaseEncodeDims>(const SparseKernel &ws
                                                           MDArray<kPhaseEncodeDims + 1, int> &mask,
                                                           double &cost);
 
-template
-MDArray<kPhaseEncodeDims+2, double> computeDiffDist<kPhaseEncodeDims>(const MDArray<kPhaseEncodeDims + 1, int> &mask);
+template MDArray<kPhaseEncodeDims + 2, double> computeDiffDist<kPhaseEncodeDims>(const MDArray<kPhaseEncodeDims + 1, int> &mask);
 
-template
-void SampleExactBestCandidate<kPhaseEncodeDims>(const MDArray<kPhaseEncodeDims + 2, double> &kernel,
-                                                const std::vector<long> &maxSamplesPerFrame,
-                                                long totSamps,
-                                                MDArray<kPhaseEncodeDims + 1, int> &mask,
-                                                double &cost,
-                                                MDArray<kPhaseEncodeDims+1, double> &deltaJ);
+template void SampleExactBestCandidate<kPhaseEncodeDims>(const MDArray<kPhaseEncodeDims + 2, double> &kernel,
+                                                         const std::vector<long> &maxSamplesPerFrame,
+                                                         long totSamps,
+                                                         MDArray<kPhaseEncodeDims + 1, int> &mask,
+                                                         double &cost,
+                                                         MDArray<kPhaseEncodeDims + 1, double> &deltaJ);

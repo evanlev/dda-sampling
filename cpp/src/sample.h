@@ -1,17 +1,20 @@
 #ifndef SAMPLE_H
 #define SAMPLE_H
 
-class Sample {
-    private:
-        int kt;
-    public:
-        double dJ;
-        Sample() {
-            // empty
-        }
-        Sample(const int _kt, const double _dJ);
+class Sample
+{
+private:
+    int kt;
 
-        int getKTIndex() const;
+public:
+    double dJ;
+    Sample()
+    {
+        // empty
+    }
+    Sample(const int kt, const double dJ);
+
+    int getKTIndex() const;
 };
 
 #endif

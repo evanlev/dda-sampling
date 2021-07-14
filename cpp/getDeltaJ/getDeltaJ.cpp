@@ -36,7 +36,7 @@ static bool processCommandLine(int argc, char *argv[], string &wfile, string &pa
         // S = total samples
         if (!vm.count("w") || !vm.count("pat") || !vm.count("dJ"))
         {
-            cout << desc << "\n";
+            std::cout << desc << "\n";
             return false;
         }
     } // end try
