@@ -52,10 +52,15 @@ For cpp version, cmake and boost are required. On macOS, run "brew install boost
 
 ##### cpp/
 To compile the C++ version with CMake, run
+
 $ cd cpp
+
 $ mkdir build
+
 $ cd build
+
 $ cmake ..
+
 $ make
 
 ##### BART/
