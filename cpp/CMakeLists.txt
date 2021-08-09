@@ -8,7 +8,7 @@ project (sampling)
 
 add_subdirectory(src)
 add_subdirectory(bcfast)
-add_subdirectory(getdeltaj)
-add_subdirectory(testheap)
-add_subdirectory(testgenerator)
+add_subdirectory(getDeltaJ)
+add_subdirectory(testHeap)
+add_subdirectory(testGenerator)
 

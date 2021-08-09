@@ -6,7 +6,7 @@ This was originally ported from the C version and did not fully exploit C++ cons
 DISCLAIMER: This is research done at Stanford University. We do not 
 guarantee that the code is error-free. Please contact the author if you 
 find any bugs or have any suggestions or thoughts.
-Evan Levine (egl@stanford.edu) 2017.
+Evan Levine (evanlevine@alumni.stanford.edu) 2017.
 
 ## 1. Components
 
@@ -16,9 +16,12 @@ There are MATLAB, C, and C++ implementations.
 MATLAB code, test scripts, and two demos. Implementations of sampling functions
 in MATLAB are provided in matlab/dda_utils.
 
-### BART 0.7.00
+### BART 
 C code that can be used with the Berkeley Advanced Reconstruction Toolbox (BART).
 If this is not set up, MATLAB code will revert to slower implementations in MATLAB. 
+
+To use this, check out BART and commit 125a8a2c794f3cde7aa17294e35aed23de838d75.
+
 The following functions should be added.
 
 ##### dda_getw.c
@@ -45,7 +48,7 @@ C++ to implement the data structures used in best candidate sampling.
 
 MATLAB. 
 
-g++ and BART 0.7.00 highly recommended for functions to run fast. 
+g++ and BART are recommended as efficient implementations.
 For cpp version, cmake and boost are required. On macOS, run "brew install boost" with homebrew.
 
 ### 2.2. Setup
